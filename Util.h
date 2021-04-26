@@ -3,7 +3,9 @@
 
 #include <string>
 
-bool isDelimeterOfToken(char c);
+bool isDelimiterOfToken(char c);
 bool isStringPostfix(char c);
+bool isOpenDelimiter(char c);
+bool isValidDelimitedString(char c);
 
 #endif
