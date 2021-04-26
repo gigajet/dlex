@@ -121,15 +121,9 @@ Token LexicalAnalyzer::ScanNumber()
             if (!digit_encountered || !valid_integer_suffix) {
                 tmp.lexeme = "";
                 tmp.token_type = ERROR;
-                /*
-                //Không có digit --> 0x____________[xxx]
-                                    0x____________uL (nuốt luôn chữ uL)
-                                    0x____________uLA (nhả chữ A)
-                                    0x12312_[(Có chữ)] và chữ đó khác */
             }
             else {
                 tmp.token_type = HEXINT;
-                //Nhả sau cái integer suffix về...
             }
             return tmp;
         }

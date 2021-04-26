@@ -1,5 +1,5 @@
 import std.stdio;
 void main() {
-	int x=000000000000000_0000000;
+	int x=0x_____uL;
 	writeln(x);
 }
