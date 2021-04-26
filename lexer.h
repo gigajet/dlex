@@ -34,6 +34,20 @@ class LexicalAnalyzer {
     Token GetToken();
     TokenType UngetToken(Token);
     LexicalAnalyzer();
+    LexicalAnalyzer(std::istream* _stream)
+    {
+      input.stream = _stream;
+      this->line_no = 1;
+      //input.stream = &std::cin;
+      tmp.lexeme = "";
+      tmp.line_no = 1;
+      tmp.token_type = ERROR;
+    }
+    // ~LexicalAnalyzer()
+    // {
+    //   delete input.stream;
+    //   input.stream = nullptr;
+    // }
 
   private:
     std::vector<Token> tokens;
@@ -46,7 +60,7 @@ class LexicalAnalyzer {
     TokenType FindKeywordIndex(std::string);
     Token ScanIdOrKeyword();
     Token ScanNumber();
-
+    Token ErrorToken();
 
     Token DecimalInteger();
     Token BinaryInteger();

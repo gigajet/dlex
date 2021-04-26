@@ -13,7 +13,7 @@ bool InputBuffer::EndOfInput()
     if (!input_buffer.empty())
         return false;
     else
-        return cin.eof();
+        return stream->eof();
 }
 
 char InputBuffer::UngetChar(char c)
@@ -29,7 +29,7 @@ void InputBuffer::GetChar(char& c)
         c = input_buffer.back();
         input_buffer.pop_back();
     } else {
-        cin.get(c);
+        stream->get(c);
     }
 }
 
