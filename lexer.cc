@@ -90,7 +90,6 @@ Token LexicalAnalyzer::ScanNumber()
     if (!input.EndOfInput()) {
         input.UngetChar(c);
     }
-    cout<<"LEXEME: "<<tmp.lexeme<<"\n";
     if (tmp.lexeme.length()<=1 && isdigit(tmp.lexeme[0])) {
         tmp.token_type = DECINT;
         return tmp;
@@ -110,17 +109,21 @@ Token LexicalAnalyzer::ScanNumber()
                 }
                 else break;
             }
-            bool valid_integer_suffix=number_prefix >= tmp.lexeme.length()
-                || tmp.lexeme.substr(number_prefix)=="L"
-                || tmp.lexeme.substr(number_prefix)=="u"
-                || tmp.lexeme.substr(number_prefix)=="U"
-                || tmp.lexeme.substr(number_prefix)=="Lu"
-                || tmp.lexeme.substr(number_prefix)=="LU"
-                || tmp.lexeme.substr(number_prefix)=="uL"
-                || tmp.lexeme.substr(number_prefix)=="UL";
+            int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
+                | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+                | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+                | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+                | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
+                | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
+                | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
+                | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
             if (!digit_encountered || !valid_integer_suffix) {
                 tmp.lexeme = "";
                 tmp.token_type = ERROR;
+                if (valid_integer_suffix >> 1) ++number_prefix;
+                if (valid_integer_suffix >> 4) ++number_prefix;
+                if (number_prefix < tmp.lexeme.length())
+                    input.UngetString(tmp.lexeme.substr(number_prefix));
                 /*
                 //Không có digit --> 0x____________[xxx]
                                     0x____________uL (nuốt luôn chữ uL)
@@ -129,7 +132,11 @@ Token LexicalAnalyzer::ScanNumber()
             }
             else {
                 tmp.token_type = HEXINT;
+                if (valid_integer_suffix >> 1) ++number_prefix;
+                if (valid_integer_suffix >> 4) ++number_prefix;
                 //Nhả sau cái integer suffix về...
+                if (number_prefix < tmp.lexeme.length())
+                    input.UngetString(tmp.lexeme.substr(number_prefix));
             }
             return tmp;
         }
@@ -146,20 +153,28 @@ Token LexicalAnalyzer::ScanNumber()
                 }
                 else break;
             }
-            bool valid_integer_suffix=number_prefix >= tmp.lexeme.length()
-                || tmp.lexeme.substr(number_prefix)=="L"
-                || tmp.lexeme.substr(number_prefix)=="u"
-                || tmp.lexeme.substr(number_prefix)=="U"
-                || tmp.lexeme.substr(number_prefix)=="Lu"
-                || tmp.lexeme.substr(number_prefix)=="LU"
-                || tmp.lexeme.substr(number_prefix)=="uL"
-                || tmp.lexeme.substr(number_prefix)=="UL";
+            int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
+                | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+                | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+                | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+                | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
+                | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
+                | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
+                | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
             if (!digit_encountered || !valid_integer_suffix) {
                 tmp.lexeme = "";
                 tmp.token_type = ERROR;
+                if (valid_integer_suffix >> 1) ++number_prefix;
+                if (valid_integer_suffix >> 4) ++number_prefix;
+                if (number_prefix < tmp.lexeme.length())
+                    input.UngetString(tmp.lexeme.substr(number_prefix));
             }
             else {
                 tmp.token_type = BININT;
+                if (valid_integer_suffix >> 1) ++number_prefix;
+                if (valid_integer_suffix >> 4) ++number_prefix;
+                if (number_prefix < tmp.lexeme.length())
+                    input.UngetString(tmp.lexeme.substr(number_prefix));
             }
             return tmp;
         }
@@ -179,20 +194,28 @@ Token LexicalAnalyzer::ScanNumber()
             //But octal literals like 010 are no longer supported in latest version
             //The dmd compiler raises error for octal literal larger than 7.
             //Therefore, we raise an error for, example, 000000009 or 0010
-            bool valid_integer_suffix=number_prefix >= tmp.lexeme.length()
-                || tmp.lexeme.substr(number_prefix)=="L"
-                || tmp.lexeme.substr(number_prefix)=="u"
-                || tmp.lexeme.substr(number_prefix)=="U"
-                || tmp.lexeme.substr(number_prefix)=="Lu"
-                || tmp.lexeme.substr(number_prefix)=="LU"
-                || tmp.lexeme.substr(number_prefix)=="uL"
-                || tmp.lexeme.substr(number_prefix)=="UL";
+            int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
+                | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+                | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+                | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+                | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
+                | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
+                | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
+                | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
             if (value>7 || !valid_integer_suffix) {
                 tmp.lexeme="";
                 tmp.token_type=ERROR;
+                if (valid_integer_suffix >> 1) ++number_prefix;
+                if (valid_integer_suffix >> 4) ++number_prefix;
+                if (number_prefix < tmp.lexeme.length())
+                    input.UngetString(tmp.lexeme.substr(number_prefix));
                 return tmp;
             }
             tmp.token_type=OCTINT;
+            if (valid_integer_suffix >> 1) ++number_prefix;
+            if (valid_integer_suffix >> 4) ++number_prefix;
+            if (number_prefix < tmp.lexeme.length())
+                input.UngetString(tmp.lexeme.substr(number_prefix));
             return tmp;
         }
     }
@@ -209,20 +232,28 @@ Token LexicalAnalyzer::ScanNumber()
             }
             else break;
         }
-        bool valid_integer_suffix=number_prefix >= tmp.lexeme.length()
-            || tmp.lexeme.substr(number_prefix)=="L"
-            || tmp.lexeme.substr(number_prefix)=="u"
-            || tmp.lexeme.substr(number_prefix)=="U"
-            || tmp.lexeme.substr(number_prefix)=="Lu"
-            || tmp.lexeme.substr(number_prefix)=="LU"
-            || tmp.lexeme.substr(number_prefix)=="uL"
-            || tmp.lexeme.substr(number_prefix)=="UL";
+        int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
+            | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+            | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+            | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+            | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
+            | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
+            | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
+            | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
         if (!digit_encountered || !valid_integer_suffix) {
             tmp.lexeme = "";
             tmp.token_type = ERROR;
+            if (valid_integer_suffix >> 1) ++number_prefix;
+            if (valid_integer_suffix >> 4) ++number_prefix;
+            if (number_prefix < tmp.lexeme.length())
+                input.UngetString(tmp.lexeme.substr(number_prefix));
         }
         else {
             tmp.token_type = DECINT;
+            if (valid_integer_suffix >> 1) ++number_prefix;
+            if (valid_integer_suffix >> 4) ++number_prefix;
+            if (number_prefix < tmp.lexeme.length())
+                input.UngetString(tmp.lexeme.substr(number_prefix));
         }
         return tmp;
     }
