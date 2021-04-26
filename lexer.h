@@ -5,6 +5,7 @@
 #include <string>
 
 #include "inputbuf.h"
+#include "Util.h"
 
 // ------- token types -------------------
 
@@ -15,7 +16,8 @@ typedef enum { END_OF_FILE = 0,
     LBRAC, RBRAC, LPAREN, RPAREN,
     NOTEQUAL, GREATER, LESS, LTEQ, GTEQ,
     DOT, NUM, ID, ERROR, // TODO: Add labels for new token types here
-    DECINT, BININT, HEXINT, OCTINT
+    DECINT, BININT, HEXINT, OCTINT,
+    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, 
 } TokenType;
 
 class Token {
@@ -49,6 +51,12 @@ class LexicalAnalyzer {
     Token DecimalInteger();
     Token BinaryInteger();
     Token HexadecimalInteger();
+
+    Token ScanString();
+    Token WysString();
+    Token DoubleQuoteString();
+    Token DelimitedString();
+    Token TokenString();
 };
 
 #endif  //__LEXER__H__

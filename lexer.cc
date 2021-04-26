@@ -16,7 +16,8 @@ string reserved[] = { "END_OF_FILE",
     "LBRAC", "RBRAC", "LPAREN", "RPAREN",
     "NOTEQUAL", "GREATER", "LESS", "LTEQ", "GTEQ",
     "DOT", "NUM", "ID", "ERROR",
-    "DECINT", "BININT", "HEXINT", "OCTINT"
+    "DECINT", "BININT", "HEXINT", "OCTINT",
+    ""
 };
 
 #define KEYWORDS_COUNT 5
@@ -231,6 +232,8 @@ Token LexicalAnalyzer::ScanIdOrKeyword()
     return tmp;
 }
 
+
+
 TokenType LexicalAnalyzer::UngetToken(Token tok)
 {
     tokens.push_back(tok);;
@@ -319,16 +322,31 @@ Token LexicalAnalyzer::GetToken()
             }
             return tmp;
         default:
-            if (isdigit(c) && c=='0') {
+            if (isdigit(c) && c=='0') 
+            {
                 input.UngetChar(c);
                 return ScanNumber();
-            } else if (isdigit(c)) {
+            } 
+            else if (isdigit(c)) 
+            {
                 input.UngetChar(c);
                 return DecimalInteger();
-            } else if (isalpha(c)) {
+            } 
+            else if (c=='\"')
+            {
+                input.UngetChar(c);
+                return DoubleQuoteString();
+            }
+            else if (isalpha(c) && c=='r') 
+            {
+                 
+            } 
+            else if (isalpha(c)) 
+            {
                 input.UngetChar(c);
                 return ScanIdOrKeyword();
-            } else if (input.EndOfInput())
+            } 
+            else if (input.EndOfInput())
                 tmp.token_type = END_OF_FILE;
             else
                 tmp.token_type = ERROR;
