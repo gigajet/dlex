@@ -7,7 +7,10 @@ Token LexicalAnalyzer::WysString()
 
 Token LexicalAnalyzer::DoubleQuoteString()
 {
-    while 
+    char c;
+    input.GetChar(c);
+
+    
 }
 Token LexicalAnalyzer::DelimitedString();
 Token LexicalAnalyzer::TokenString();

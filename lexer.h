@@ -17,7 +17,7 @@ typedef enum { END_OF_FILE = 0,
     NOTEQUAL, GREATER, LESS, LTEQ, GTEQ,
     DOT, NUM, ID, ERROR, // TODO: Add labels for new token types here
     DECINT, BININT, HEXINT, OCTINT,
-    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, 
+    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR,
 } TokenType;
 
 class Token {
