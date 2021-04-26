@@ -8,19 +8,18 @@ Token LexicalAnalyzer::WysString()
     input.GetChar(c);
     val.push_back(c);
     //truong hop su dung ' ' 
-    if (c == '\'')
+    if (c == '`')
     {
         bool isEndLoop = false;
         while (!input.EndOfInput() && !isEndLoop)
         {
             input.GetChar(c);
             val.push_back(c);
-            if (c=='\'')
+            if (c=='`')
             {
                 isEndLoop = true;
                 break;
             }
-            
         }
         if (!isEndLoop)
         {
