@@ -11,16 +11,27 @@ using namespace std;
 
 string reserved[] = { "END_OF_FILE",
     "IF", "WHILE", "DO", "THEN", "PRINT",
-    "PLUS", "MINUS", "DIV", "MULT",
+    "PLUS", "MINUS", "DIV", "MULT", "REMAIN", "POWER",
+	"INC", "DEC",
     "EQUAL", "COLON", "COMMA", "SEMICOLON",
     "LBRAC", "RBRAC", "LPAREN", "RPAREN",
+	"ASSIGN", "PLUSASSIGN", "MINUSASSIGN", "DIVASSIGN", "REMAINASSIGN", "MULTASSIGN", "POWERASSIGN",
     "NOTEQUAL", "GREATER", "LESS", "LTEQ", "GTEQ",
+	"NOT", "LogicOR", "LogicAND",
+	"BitOR", "BitAND", "XOR", "ONECOMPLETE", "LEFTSHIFT", "RIGHTSHIFT", "LogicRIGHTSHIFT",
+	"ORASSIGN", "ANDASSIGN", "XORASSIGN", "ONECOMPLETE_ASSIGN", "LEFTSHIFT_ASSIGN", "RIGHTSHIFT_ASSIGN",
+	"LOG_RIGHTSHIFT_ASSIGN",
+	"LAMBDA",
+	"CONDITIONAL", "QMARK",
     "DOT", "NUM", "ID", "ERROR",
+	"CHAR",
     "DECINT", "BININT", "HEXINT", "OCTINT"
 };
 
 #define KEYWORDS_COUNT 5
 string keyword[] = { "IF", "WHILE", "DO", "THEN", "PRINT" };
+#define ESC_SEQUENCE_COUNT 12
+char esc_sequence[] = { '\'', '\"', '\?', '\\', '0' ,'a', 'b', 'f', 'n', 'r', 't', 'v' };
 
 void Token::Print()
 {
@@ -65,6 +76,14 @@ bool LexicalAnalyzer::IsKeyword(string s)
         }
     }
     return false;
+}
+bool LexicalAnalyzer::IsEscSequence(char a) {
+	for (int i = 0; i < ESC_SEQUENCE_COUNT; i++) {
+		if (a == esc_sequence[i]) {
+			return true;
+		}
+	}
+	return false;
 }
 
 TokenType LexicalAnalyzer::FindKeywordIndex(string s)
@@ -128,6 +147,61 @@ Token LexicalAnalyzer::ScanNumber()
         tmp.line_no = line_no;
         return tmp;
     }
+}
+
+Token LexicalAnalyzer::ScanChar() {
+	char c;
+	string tempo = "";
+	input.GetChar(c);
+	if (c == '\'') {
+		tmp.lexeme += c;
+		input.GetChar(c);
+		tempo += c;
+		if (c != '\\') { //Not an escape sequence
+			input.GetChar(c);
+			tempo += c;
+			if (c == '\'') {
+				tmp.lexeme += tempo;
+				tmp.line_no = line_no;
+				tmp.token_type = CHAR;
+			}
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetString(tempo);
+				}
+				tmp.lexeme = "";
+				tmp.token_type = ERROR;
+			}
+		}
+		else {
+			input.GetChar(c);
+			tempo += c;
+			if (IsEscSequence(c)) {
+				input.GetChar(c);
+				tempo += c;
+				if (c == '\'') {
+					tmp.lexeme += tempo;
+					tmp.line_no = line_no;
+					tmp.token_type = CHAR;
+				}
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetString(tempo);
+					}
+					tmp.lexeme = "";
+					tmp.token_type = ERROR;
+				}
+			}
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetString(tempo);
+				}
+				tmp.lexeme = "";
+				tmp.token_type = ERROR;
+			}
+		}
+	}
+	return tmp;
 }
 
 Token LexicalAnalyzer::DecimalInteger() {
@@ -255,69 +329,231 @@ Token LexicalAnalyzer::GetToken()
     tmp.line_no = line_no;
     input.GetChar(c);
     switch (c) {
-        case '.':
-            tmp.token_type = DOT;
-            return tmp;
-        case '+':
-            tmp.token_type = PLUS;
-            return tmp;
-        case '-':
-            tmp.token_type = MINUS;
-            return tmp;
-        case '/':
-            tmp.token_type = DIV;
-            return tmp;
-        case '*':
-            tmp.token_type = MULT;
-            return tmp;
-        case '=':
-            tmp.token_type = EQUAL;
-            return tmp;
-        case ':':
-            tmp.token_type = COLON;
-            return tmp;
-        case ',':
-            tmp.token_type = COMMA;
-            return tmp;
-        case ';':
-            tmp.token_type = SEMICOLON;
-            return tmp;
-        case '[':
-            tmp.token_type = LBRAC;
-            return tmp;
-        case ']':
-            tmp.token_type = RBRAC;
-            return tmp;
-        case '(':
-            tmp.token_type = LPAREN;
-            return tmp;
-        case ')':
-            tmp.token_type = RPAREN;
-            return tmp;
-        case '<':
-            input.GetChar(c);
-            if (c == '=') {
-                tmp.token_type = LTEQ;
-            } else if (c == '>') {
-                tmp.token_type = NOTEQUAL;
-            } else {
-                if (!input.EndOfInput()) {
-                    input.UngetChar(c);
-                }
-                tmp.token_type = LESS;
-            }
-            return tmp;
-        case '>':
-            input.GetChar(c);
-            if (c == '=') {
-                tmp.token_type = GTEQ;
-            } else {
-                if (!input.EndOfInput()) {
-                    input.UngetChar(c);
-                }
-                tmp.token_type = GREATER;
-            }
-            return tmp;
+		case '.':
+			tmp.token_type = DOT;
+			return tmp;
+		case '+':
+			input.GetChar(c);
+			if (c == '+') tmp.token_type = INC;
+			else if (c == '=') tmp.token_type = PLUSASSIGN;
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = PLUS;
+			}
+			return tmp;
+		case '-':
+			input.GetChar(c);
+			if (c == '-') tmp.token_type = DEC;
+			else if (c == '=') tmp.token_type = MINUSASSIGN;
+			else
+			{
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = MINUS;
+			}
+			return tmp;
+		case '/':
+			input.GetChar(c);
+			if (c == '=') tmp.token_type = DIVASSIGN;
+			else
+			{
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = DIV;
+			}
+			return tmp;
+		case '%':
+			input.GetChar(c);
+			if (c == '=') tmp.token_type = REMAINASSIGN;
+			else
+			{
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = REMAIN;
+			}
+			return tmp;
+		case '*':
+			input.GetChar(c);
+			if (c == '=') tmp.token_type = MULTASSIGN;
+			else
+			{
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = MULT;
+			}
+			return tmp;
+		case '=':
+			input.GetChar(c);
+			if (c == '=') tmp.token_type = EQUAL;
+			else if (c == '>') tmp.token_type = LAMBDA;
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = ASSIGN;
+			}
+			return tmp;
+		case '!':
+			input.GetChar(c);
+			if (c == '=') tmp.token_type = NOTEQUAL;
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = NOT;
+			}
+			return tmp;
+		case '&':
+			input.GetChar(c);
+			if (c == '&') tmp.token_type = LAND;
+			else if (c == '=') tmp.token_type = ANDASSIGN;
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = BAND;
+			}
+			return tmp;
+		case '|':
+			input.GetChar(c);
+			if (c == '|') tmp.token_type = LOR;
+			else if (c == '=') tmp.token_type = ORASSIGN;
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = BOR;
+			}
+			return tmp;
+		case '^':
+			input.GetChar(c);
+			if (c == '=') tmp.token_type = XORASSIGN;
+			else if (c == '^') {
+				input.GetChar(c);
+				if (c == '=') tmp.token_type = POWERASSIGN;
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetChar(c);
+					}
+					tmp.token_type = POWER;
+				}
+			}
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = XOR;
+			}
+			return tmp;
+		case '~':
+			input.GetChar(c);
+			if (c == '=') tmp.token_type = ONECOMPLETE_ASSIGN;
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}	
+				tmp.token_type = ONECOMPLETE;
+			}
+			return tmp;
+		case ':':
+			tmp.token_type = COLON;
+			return tmp;
+		case ',':
+			tmp.token_type = COMMA;
+			return tmp;
+		case ';':
+			tmp.token_type = SEMICOLON;
+			return tmp;
+		case '[':
+			tmp.token_type = LBRAC;
+			return tmp;
+		case ']':
+			tmp.token_type = RBRAC;
+			return tmp;
+		case '(':
+			tmp.token_type = LPAREN;
+			return tmp;
+		case ')':
+			tmp.token_type = RPAREN;
+			return tmp;
+		case '<':
+			input.GetChar(c);
+			if (c == '=') {
+				tmp.token_type = LTEQ;
+			}
+			else if (c == '>') {
+				tmp.token_type = NOTEQUAL;
+			}
+			else if (c == '<') {
+				input.GetChar(c);
+				if (c == '=') tmp.token_type = LEFTSHIFT_ASSIGN;
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetChar(c);
+					}
+					tmp.token_type = LEFTSHIFT;
+				}
+			}
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = LESS;
+			}
+			return tmp;
+		case '>':
+			input.GetChar(c);
+			if (c == '=') {
+				tmp.token_type = GTEQ;
+			}
+			else if (c == '>') {
+				input.GetChar(c);
+				if (c == '>') {
+					input.GetChar(c);
+					if (c == '=') { tmp.token_type = LOG_RIGHTSHIFT_ASSIGN; }
+					else {
+						if (!input.EndOfInput()) {
+							input.UngetChar(c);
+						}
+						tmp.token_type = LOGRIGHTSHIFT;
+					}
+				}
+				else if (c == '=') tmp.token_type = RIGHTSHIFT_ASSIGN;
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetChar(c);
+					}
+					tmp.token_type = RIGHTSHIFT;
+				}
+			}
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = GREATER;
+			}
+			return tmp;
+		case '?':
+			input.GetChar(c);
+			if (c == ':') {
+				tmp.token_type = CONDITIONAL;
+			}
+			else {
+				if (!input.EndOfInput()) {
+					input.UngetChar(c);
+				}
+				tmp.token_type = QMARK;
+			}
+			return tmp;
+		case '\'':
+			input.UngetChar(c);
+			return ScanChar();
         default:
             if (isdigit(c) && c=='0') {
                 input.UngetChar(c);
