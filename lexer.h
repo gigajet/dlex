@@ -1,6 +1,6 @@
 #ifndef __LEXER__H__
 #define __LEXER__H__
-#define DEBUGG
+//#define DEBUGG
 
 #include <vector>
 #include <string>

@@ -7,6 +7,6 @@ string funcname(float abs)
 
 int main()
 {
-    writeln('\&nbsp;');
+    writeln('\&iexcl;');
     return 0x293ABCUL;
 }
