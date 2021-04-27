@@ -379,6 +379,7 @@ Token LexicalAnalyzer::ScanString()
             }
             else 
             {
+                input.UngetChar(c);
                 input.UngetChar('r');
                 return ScanIdOrKeyword();
             }

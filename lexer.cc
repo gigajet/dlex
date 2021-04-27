@@ -13,20 +13,21 @@ using namespace std;
 
 string reserved[] = { "END_OF_FILE",
     //keywords
-    "abstract", "alias", "align", "asm", "assert", "auto", "body", "bool", "break", "byte",
-    "case", "cast", "catch", "cdouble", "cent", "cfloat", "char", "class", "const",
-    "continue", "creal", "dchar", "debug", "default", "delegate", "delete",
-    "deprecated", "do", "double", "else", "enum", "export", "extern", "false",
-    "final", "finally", "float", "for", "foreach", "foreach_reverse", "function",
-    "goto", "idouble", "if", "ifloat", "immutable", "import", "in", "inout", "int",
-    "interface", "invariant", "ireal", "is", "lazy", "long", "macro",
-    "mixin", "module", "new", "nothrow", "null", "out", "override", "package", "pragma",
-    "private", "protected", "public", "pure", "real", "ref", "return", "scope", "shared",
-    "short", "static", "struct", "super", "switch", "synchronized", "template", "this",
-    "throw", "true", "try", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union",
-    "unittest", "ushort", "version", "void", "wchar", "while", "with", "__FILE__",
+    "ABSTRACT", "ALIAS", "ALIGN", "ASM", "ASSERT", "AUTO", "BODY", "BOOL", "BREAK", "BYTE",
+    "CASE", "CAST", "CATCH", "CDOUBLE", "CENT", "CFLOAT", "CHAR", "CLASS", "CONST",
+    "CONTINUE", "CREAL", "DCHAR", "DEBUG", "DEFAULT", "DELEGATE", "DELETE",
+    "DEPRECATED", "DO", "DOUBLE", "ELSE", "ENUM", "EXPORT", "EXTERN", "FALSE",
+    "FINAL", "FINALLY", "FLOAT", "FOR", "FOREACH", "FOREACH_REVERSE", "FUNCTION",
+    "GOTO", "IDOUBLE", "IF", "IFLOAT", "IMMUTABLE", "IMPORT", "IN", "INOUT", "INT",
+    "INTERFACE", "INVARIANT", "IREAL", "IS", "LAZY", "LONG", "MACRO",
+    "MIXIN", "MODULE", "NEW", "NOTHROW", "NULL", "OUT", "OVERRIDE", "PACKAGE", "PRAGMA",
+    "PRIVATE", "PROTECTED", "PUBLIC", "PURE", "REAL", "REF", "RETURN", "SCOPE", "SHARED",
+    "SHORT", "STATIC", "STRUCT", "SUPER", "SWITCH", "SYNCHRONIZED", "TEMPLATE", "THIS",
+    "THROW", "TRUE", "TRY", "TYPEID", "TYPEOF", "UBYTE", "UCENT", "UINT", "ULONG", "UNION",
+    "UNITTEST", "USHORT", "VERSION", "VOID", "WCHAR", "WHILE", "WITH", "__FILE__",
     "__FILE_FULL_PATH__", "__MODULE__", "__LINE__", "__FUNCTION__",
-    "__PRETTY_FUNCTION__", "__gshared", "__traits", "__vector", "__parameters",
+    "__PRETTY_FUNCTION__", "__GSHARED", "__TRAITS", "__VECTOR", "__PARAMETERS",
+	"LCURLY", "RCURLY",
     //others
     //"PLUS", "MINUS", "DIV", "MULT",
     "PLUS", "MINUS", "DIV", "MULT", "REMAIN", "POWER",
@@ -42,7 +43,7 @@ string reserved[] = { "END_OF_FILE",
 	"LAMBDA",
 	"CONDITIONAL", "QMARK",
     "DOT", "NUM", "ID", "ERROR",
-	"CHAR",
+	"CHARACTER",
     "DECINT", "BININT", "HEXINT", "OCTINT",
     "WYSIWYGSTR", "DOUBLESTR", "DELIMITEDSTR", "TOKENSTR",
 };
@@ -363,7 +364,7 @@ Token LexicalAnalyzer::ScanChar() {
 			if (c == '\'') {
 				tmp.lexeme += tempo;
 				tmp.line_no = line_no;
-				tmp.token_type = CHAR;
+				tmp.token_type = CHARACTER;
 			}
 			else {
 				if (!input.EndOfInput()) {
@@ -382,7 +383,7 @@ Token LexicalAnalyzer::ScanChar() {
 				if (c == '\'') {
 					tmp.lexeme += tempo;
 					tmp.line_no = line_no;
-					tmp.token_type = CHAR;
+					tmp.token_type = CHARACTER;
 				}
 				else {
 					if (!input.EndOfInput()) {
@@ -405,7 +406,7 @@ Token LexicalAnalyzer::ScanChar() {
 					if (c == '\'') {
 						tmp.lexeme += tempo;
 						tmp.line_no = line_no;
-						tmp.token_type = CHAR;
+						tmp.token_type = CHARACTER;
 					}
 					else {
 						if (!input.EndOfInput()) {
@@ -436,7 +437,7 @@ Token LexicalAnalyzer::ScanChar() {
 					if (c == '\'') {
 						tmp.lexeme += tempo;
 						tmp.line_no = line_no;
-						tmp.token_type = CHAR;
+						tmp.token_type = CHARACTER;
 					}
 					else {
 						if (!input.EndOfInput()) {
@@ -467,7 +468,7 @@ Token LexicalAnalyzer::ScanChar() {
 					if (c == '\'') {
 						tmp.lexeme += tempo;
 						tmp.line_no = line_no;
-						tmp.token_type = CHAR;
+						tmp.token_type = CHARACTER;
 					}
 					else {
 						if (!input.EndOfInput()) {
@@ -502,7 +503,7 @@ Token LexicalAnalyzer::ScanChar() {
 						if (c == '\'') {
 							tmp.lexeme += tempo;
 							tmp.line_no = line_no;
-							tmp.token_type = CHAR;
+							tmp.token_type = CHARACTER;
 						}
 						else {
 							if (!input.EndOfInput()) {
@@ -544,13 +545,13 @@ Token LexicalAnalyzer::ScanIdOrKeyword()
 {
     char c;
     input.GetChar(c);
-
-    if (isalpha(c) || c == "_") {
+    if (isalpha(c) || c == '_') {
         tmp.lexeme = "";
         while (!input.EndOfInput() && isalnum(c)) {
             tmp.lexeme += c;
             input.GetChar(c);
         }
+		cout<<"LEXEME: "<<tmp.lexeme<<"\n";
         if (!input.EndOfInput()) {
             input.UngetChar(c);
         }
@@ -601,6 +602,12 @@ Token LexicalAnalyzer::GetToken()
     tmp.line_no = line_no;
     input.GetChar(c);
     switch (c) {
+		case '{':
+			tmp.token_type=LCURLY;
+			return tmp;
+		case '}':
+			tmp.token_type=RCURLY;
+			return tmp;
 		case '.':
 			tmp.token_type = DOT;
 			return tmp;

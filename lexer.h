@@ -27,6 +27,7 @@ typedef enum { END_OF_FILE = 0,
     VERSION, VOID, WCHAR, WHILE, WITH, ___FILE__, __FILE_FULL_PATH__,
     __MODULE__, ___LINE__, ___FUNCTION__, ___PRETTY_FUNCTION__,
     __GSHARED, __TRAITS, __VECTOR, __PARAMETERS,
+    LCURLY, RCURLY,
     //Others
     //PLUS, MINUS, DIV, MULT,
     PLUS, MINUS, DIV, MULT, REMAIN, POWER,
@@ -42,7 +43,7 @@ typedef enum { END_OF_FILE = 0,
 	LAMBDA,
 	CONDITIONAL, QMARK,
     DOT, NUM, ID, ERROR, // TODO: Add labels for new token types here
-        CHAR,
+        CHARACTER,
     DECINT, BININT, HEXINT, OCTINT,
     WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR
 } TokenType;
