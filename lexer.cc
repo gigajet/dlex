@@ -12,7 +12,23 @@
 using namespace std;
 
 string reserved[] = { "END_OF_FILE",
-    "IF", "WHILE", "DO", "THEN", "PRINT",
+    //keywords
+    "abstract", "alias", "align", "asm", "assert", "auto", "body", "bool", "break", "byte",
+    "case", "cast", "catch", "cdouble", "cent", "cfloat", "char", "class", "const",
+    "continue", "creal", "dchar", "debug", "default", "delegate", "delete",
+    "deprecated", "do", "double", "else", "enum", "export", "extern", "false",
+    "final", "finally", "float", "for", "foreach", "foreach_reverse", "function",
+    "goto", "idouble", "if", "ifloat", "immutable", "import", "in", "inout", "int",
+    "interface", "invariant", "ireal", "is", "lazy", "long", "macro",
+    "mixin", "module", "new", "nothrow", "null", "out", "override", "package", "pragma",
+    "private", "protected", "public", "pure", "real", "ref", "return", "scope", "shared",
+    "short", "static", "struct", "super", "switch", "synchronized", "template", "this",
+    "throw", "true", "try", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union",
+    "unittest", "ushort", "version", "void", "wchar", "while", "with", "__FILE__",
+    "__FILE_FULL_PATH__", "__MODULE__", "__LINE__", "__FUNCTION__",
+    "__PRETTY_FUNCTION__", "__gshared", "__traits", "__vector", "__parameters",
+    //others
+    //"PLUS", "MINUS", "DIV", "MULT",
     "PLUS", "MINUS", "DIV", "MULT", "REMAIN", "POWER",
 	"INC", "DEC",
     "EQUAL", "COLON", "COMMA", "SEMICOLON",
@@ -31,8 +47,23 @@ string reserved[] = { "END_OF_FILE",
     "WYSIWYGSTR", "DOUBLESTR", "DELIMITEDSTR", "TOKENSTR",
 };
 
-#define KEYWORDS_COUNT 5
-string keyword[] = { "IF", "WHILE", "DO", "THEN", "PRINT" };
+#define KEYWORDS_COUNT 110
+string keyword[] = { 
+    "abstract", "alias", "align", "asm", "assert", "auto", "body", "bool", "break", "byte",
+    "case", "cast", "catch", "cdouble", "cent", "cfloat", "char", "class", "const",
+    "continue", "creal", "dchar", "debug", "default", "delegate", "delete",
+    "deprecated", "do", "double", "else", "enum", "export", "extern", "false",
+    "final", "finally", "float", "for", "foreach", "foreach_reverse", "function",
+    "goto", "idouble", "if", "ifloat", "immutable", "import", "in", "inout", "int",
+    "interface", "invariant", "ireal", "is", "lazy", "long", "macro",
+    "mixin", "module", "new", "nothrow", "null", "out", "override", "package", "pragma",
+    "private", "protected", "public", "pure", "real", "ref", "return", "scope", "shared",
+    "short", "static", "struct", "super", "switch", "synchronized", "template", "this",
+    "throw", "true", "try", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union",
+    "unittest", "ushort", "version", "void", "wchar", "while", "with", "__FILE__",
+    "__FILE_FULL_PATH__", "__MODULE__", "__LINE__", "__FUNCTION__",
+    "__PRETTY_FUNCTION__", "__gshared", "__traits", "__vector", "__parameters", };
+
 #define ESC_SEQUENCE_COUNT 12
 char esc_sequence[] = { '\'', '\"', '\?', '\\', '0' ,'a', 'b', 'f', 'n', 'r', 't', 'v' };
 
@@ -514,7 +545,7 @@ Token LexicalAnalyzer::ScanIdOrKeyword()
     char c;
     input.GetChar(c);
 
-    if (isalpha(c)) {
+    if (isalpha(c) || c == "_") {
         tmp.lexeme = "";
         while (!input.EndOfInput() && isalnum(c)) {
             tmp.lexeme += c;
