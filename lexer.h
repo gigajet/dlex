@@ -5,6 +5,7 @@
 #include <string>
 
 #include "inputbuf.h"
+#include "Util.h"
 
 // ------- token types -------------------
 
@@ -24,7 +25,8 @@ typedef enum { END_OF_FILE = 0,
 	CONDITIONAL, QMARK,
     DOT, NUM, ID, ERROR, // TODO: Add labels for new token types here
 	CHAR,
-    DECINT, BININT, HEXINT, OCTINT
+    DECINT, BININT, HEXINT, OCTINT,
+    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR
 } TokenType;
 
 class Token {
@@ -41,6 +43,20 @@ class LexicalAnalyzer {
     Token GetToken();
     TokenType UngetToken(Token);
     LexicalAnalyzer();
+    LexicalAnalyzer(std::istream* _stream)
+    {
+      input.stream = _stream;
+      this->line_no = 1;
+      //input.stream = &std::cin;
+      tmp.lexeme = "";
+      tmp.line_no = 1;
+      tmp.token_type = ERROR;
+    }
+    // ~LexicalAnalyzer()
+    // {
+    //   delete input.stream;
+    //   input.stream = nullptr;
+    // }
 
   private:
     std::vector<Token> tokens;
@@ -56,11 +72,13 @@ class LexicalAnalyzer {
     Token ScanIdOrKeyword();
     Token ScanNumber();
 	Token ScanChar();
+    Token ErrorToken();
 
-
-    Token DecimalInteger();
-    Token BinaryInteger();
-    Token HexadecimalInteger();
+    Token ScanString();
+    Token WysString();
+    Token DoubleQuoteString();
+    Token DelimitedString();
+    Token TokenString();
 };
 
 #endif  //__LEXER__H__
