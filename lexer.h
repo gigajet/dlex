@@ -45,10 +45,6 @@ class LexicalAnalyzer {
     Token ScanIdOrKeyword();
     Token ScanNumber();
 
-
-    Token DecimalInteger();
-    Token BinaryInteger();
-    Token HexadecimalInteger();
 };
 
 #endif  //__LEXER__H__
