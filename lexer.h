@@ -62,10 +62,6 @@ class LexicalAnalyzer {
     Token ScanNumber();
     Token ErrorToken();
 
-    Token DecimalInteger();
-    Token BinaryInteger();
-    Token HexadecimalInteger();
-
     Token ScanString();
     Token WysString();
     Token DoubleQuoteString();

@@ -40,7 +40,6 @@ bool isStringPostfix(char c)
 {
     return c=='d' || c=='c' || c=='w';
 }
-
 bool isValidDelimitedString(std::string str)
 {
     

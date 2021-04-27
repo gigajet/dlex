@@ -1,1 +1,1 @@
-g++ -std=c++11 lexer.cc inputbuf.cc -o lexer
+g++ -std=c++11 *.cc -o lexer
