@@ -17,7 +17,8 @@ string reserved[] = { "END_OF_FILE",
     "LBRAC", "RBRAC", "LPAREN", "RPAREN",
     "NOTEQUAL", "GREATER", "LESS", "LTEQ", "GTEQ",
     "DOT", "NUM", "ID", "ERROR",
-    "DECINT", "BININT", "HEXINT", "OCTINT"
+    "DECINT", "BININT", "HEXINT", "OCTINT",
+    "WYSIWYGSTR", "DOUBLESTR", "DELIMITEDSTR", "TOKENSTR",
 };
 
 #define KEYWORDS_COUNT 5
@@ -33,6 +34,7 @@ void Token::Print()
 LexicalAnalyzer::LexicalAnalyzer()
 {
     this->line_no = 1;
+    input.stream = &std::cin;
     tmp.lexeme = "";
     tmp.line_no = 1;
     tmp.token_type = ERROR;
@@ -288,6 +290,14 @@ Token LexicalAnalyzer::ScanIdOrKeyword()
     return tmp;
 }
 
+Token LexicalAnalyzer::ErrorToken()
+{
+    Token tmp;
+    tmp.line_no = line_no;
+    tmp.token_type = ERROR;
+    return tmp;
+}
+
 TokenType LexicalAnalyzer::UngetToken(Token tok)
 {
     tokens.push_back(tok);;
@@ -379,10 +389,25 @@ Token LexicalAnalyzer::GetToken()
             if (isdigit(c)) {
                 input.UngetChar(c);
                 return ScanNumber();
+            } else if (c=='\'')
+            {
+                input.UngetChar(c);
+                return WysString();
+            }
+            else if (c=='\"')
+            {
+                input.UngetChar(c);
+                return DoubleQuoteString();
+            }
+            else if (isalpha(c) && (c=='r' || c=='q')) 
+            {
+                input.UngetChar(c);
+                return ScanString();
             } else if (isalpha(c)) {
                 input.UngetChar(c);
                 return ScanIdOrKeyword();
-            } else if (input.EndOfInput())
+            } 
+            else if (input.EndOfInput())
                 tmp.token_type = END_OF_FILE;
             else
                 tmp.token_type = ERROR;
@@ -394,6 +419,7 @@ Token LexicalAnalyzer::GetToken()
 int main()
 {
     LexicalAnalyzer lexer;
+    //lexer.input.stream = &std::cin;
     Token token;
 
     token = lexer.GetToken();
