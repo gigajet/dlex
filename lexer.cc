@@ -151,7 +151,7 @@ bool LexicalAnalyzer::IsValidEntity(string s) {
 		#elif defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64)
 			if (s == namecharEntity[i]) return true;
 		#elif defined(__unix__) 
-			if (s == namecharEntity[i].substr(1, namecharEntity[i].length()-1)) return true;
+			if (s == namecharEntity[i].substr(0, namecharEntity[i].length()-1)) return true;
 		#endif
 	}
 	return false;
