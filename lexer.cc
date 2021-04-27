@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <cctype>
+#include <fstream>
 
 #include "lexer.h"
 #include "inputbuf.h"
@@ -32,6 +33,30 @@ string reserved[] = { "END_OF_FILE",
 string keyword[] = { "IF", "WHILE", "DO", "THEN", "PRINT" };
 #define ESC_SEQUENCE_COUNT 12
 char esc_sequence[] = { '\'', '\"', '\?', '\\', '0' ,'a', 'b', 'f', 'n', 'r', 't', 'v' };
+
+vector<string> namecharEntity;
+vector<string> getEntity(string filename) {
+	vector<string> ret;
+	fstream newfile;
+	newfile.open(filename, ios::in); 
+	if (newfile.is_open()) {  
+		//cout << "File exist" << endl;
+		string tp;
+		while (getline(newfile, tp)) { 
+			ret.push_back(tp);
+		}
+		newfile.close(); //close the file object.
+	}
+	return ret;
+}
+
+
+bool isHexa(int c) {
+	if (isdigit(c) || int(c) < 71 & int(c) > 64 || int(c) < 103 & int(c) > 96) {
+		return true;
+	}
+	else return false;
+}
 
 void Token::Print()
 {
@@ -77,11 +102,19 @@ bool LexicalAnalyzer::IsKeyword(string s)
     }
     return false;
 }
+
 bool LexicalAnalyzer::IsEscSequence(char a) {
 	for (int i = 0; i < ESC_SEQUENCE_COUNT; i++) {
 		if (a == esc_sequence[i]) {
 			return true;
 		}
+	}
+	return false;
+}
+
+bool LexicalAnalyzer::IsValidEntity(string s) {
+	for (int i = 0; i < namecharEntity.size(); i++) {
+		if (s == namecharEntity[i]) return true;
 	}
 	return false;
 }
@@ -157,6 +190,11 @@ Token LexicalAnalyzer::ScanChar() {
 		tmp.lexeme += c;
 		input.GetChar(c);
 		tempo += c;
+		if (c == '\n') {
+			tmp.lexeme = "";
+			tmp.token_type = ERROR;
+			return tmp;
+		}
 		if (c != '\\') { //Not an escape sequence
 			input.GetChar(c);
 			tempo += c;
@@ -173,7 +211,7 @@ Token LexicalAnalyzer::ScanChar() {
 				tmp.token_type = ERROR;
 			}
 		}
-		else {
+		else {//Is an escape sequence
 			input.GetChar(c);
 			tempo += c;
 			if (IsEscSequence(c)) {
@@ -183,6 +221,142 @@ Token LexicalAnalyzer::ScanChar() {
 					tmp.lexeme += tempo;
 					tmp.line_no = line_no;
 					tmp.token_type = CHAR;
+				}
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetString(tempo);
+					}
+					tmp.lexeme = "";
+					tmp.token_type = ERROR;
+				}
+			}
+			else if (c == 'x') {
+				int i = 0;
+				input.GetChar(c);
+				tempo += c;
+				while(!input.EndOfInput() && i < 4 && isHexa(c)){	
+					i++;
+					input.GetChar(c);
+					tempo += c;			
+				}
+				if (i == 2) {
+					if (c == '\'') {
+						tmp.lexeme += tempo;
+						tmp.line_no = line_no;
+						tmp.token_type = CHAR;
+					}
+					else {
+						if (!input.EndOfInput()) {
+							input.UngetString(tempo);
+						}
+						tmp.lexeme = "";
+						tmp.token_type = ERROR;
+					}
+				}
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetString(tempo);
+					}
+					tmp.lexeme = "";
+					tmp.token_type = ERROR;
+				}
+			}
+			else if (c == 'u') {
+				int i = 0;
+				input.GetChar(c);
+				tempo += c;
+				while (!input.EndOfInput() && i < 4 && isHexa(c)) {
+					i++;
+					input.GetChar(c);
+					tempo += c;
+				}
+				if (i == 4) {
+					if (c == '\'') {
+						tmp.lexeme += tempo;
+						tmp.line_no = line_no;
+						tmp.token_type = CHAR;
+					}
+					else {
+						if (!input.EndOfInput()) {
+							input.UngetString(tempo);
+						}
+						tmp.lexeme = "";
+						tmp.token_type = ERROR;
+					}
+				}
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetString(tempo);
+					}
+					tmp.lexeme = "";
+					tmp.token_type = ERROR;
+				}
+			}
+			else if (c == 'U') {
+				int i = 0;
+				input.GetChar(c);
+				tempo += c;
+				while (!input.EndOfInput() && i < 8 && isHexa(c)) {
+					i++;
+					input.GetChar(c);
+					tempo += c;
+				}
+				if (i == 8) {
+					if (c == '\'') {
+						tmp.lexeme += tempo;
+						tmp.line_no = line_no;
+						tmp.token_type = CHAR;
+					}
+					else {
+						if (!input.EndOfInput()) {
+							input.UngetString(tempo);
+						}
+						tmp.lexeme = "";
+						tmp.token_type = ERROR;
+					}
+				}
+				else {
+					if (!input.EndOfInput()) {
+						input.UngetString(tempo);
+					}
+					tmp.lexeme = "";
+					tmp.token_type = ERROR;
+				}
+			}
+			else if (c == '&') {
+				int i = 0;
+				string t = "";
+				while (!input.EndOfInput() && i <= 8) {
+					i++;
+					input.GetChar(c);
+					tempo += c;
+					if (c == ';') break;
+					t += c;
+				}
+				if (c == ';') {
+					if (IsValidEntity(t)) {
+						input.GetChar(c);
+						tempo += c;
+						if (c == '\'') {
+							tmp.lexeme += tempo;
+							tmp.line_no = line_no;
+							tmp.token_type = CHAR;
+						}
+						else {
+							if (!input.EndOfInput()) {
+								input.UngetString(tempo);
+							}
+							tmp.lexeme = "";
+							tmp.token_type = ERROR;
+						}
+					}
+					else {
+						if (!input.EndOfInput()) {
+							input.UngetString(tempo);
+						}
+						tmp.lexeme = "";
+						tmp.token_type = ERROR;
+					}
 				}
 				else {
 					if (!input.EndOfInput()) {
@@ -575,6 +749,7 @@ Token LexicalAnalyzer::GetToken()
 
 int main()
 {
+	namecharEntity = getEntity("C:\\Users\\Admin\\Downloads\\Principal of Programming Language\\Dlang\\dlex-main\\dlex-main\\CharEntity.txt");
     LexicalAnalyzer lexer;
     Token token;
 

@@ -51,6 +51,7 @@ class LexicalAnalyzer {
     bool SkipSpace();
     bool IsKeyword(std::string);
 	bool IsEscSequence(char);
+	bool IsValidEntity(std::string);
     TokenType FindKeywordIndex(std::string);
     Token ScanIdOrKeyword();
     Token ScanNumber();
