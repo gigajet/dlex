@@ -11,13 +11,22 @@
 
 typedef enum { END_OF_FILE = 0,
     IF, WHILE, DO, THEN, PRINT,
-    PLUS, MINUS, DIV, MULT,
+    PLUS, MINUS, DIV, MULT, REMAIN, POWER,
+	INC, DEC, 
     EQUAL, COLON, COMMA, SEMICOLON,
     LBRAC, RBRAC, LPAREN, RPAREN,
+	ASSIGN, PLUSASSIGN, MINUSASSIGN, DIVASSIGN, REMAINASSIGN, MULTASSIGN, POWERASSIGN,
     NOTEQUAL, GREATER, LESS, LTEQ, GTEQ,
+	NOT, LOR, LAND,
+	BOR, BAND, XOR, ONECOMPLETE, LEFTSHIFT, RIGHTSHIFT, LOGRIGHTSHIFT,
+	ORASSIGN, ANDASSIGN, XORASSIGN, ONECOMPLETE_ASSIGN, LEFTSHIFT_ASSIGN, RIGHTSHIFT_ASSIGN,
+	LOG_RIGHTSHIFT_ASSIGN,
+	LAMBDA,
+	CONDITIONAL, QMARK,
     DOT, NUM, ID, ERROR, // TODO: Add labels for new token types here
+	CHAR,
     DECINT, BININT, HEXINT, OCTINT,
-    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR,
+    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR
 } TokenType;
 
 class Token {
@@ -57,9 +66,12 @@ class LexicalAnalyzer {
 
     bool SkipSpace();
     bool IsKeyword(std::string);
+	bool IsEscSequence(char);
+	bool IsValidEntity(std::string);
     TokenType FindKeywordIndex(std::string);
     Token ScanIdOrKeyword();
     Token ScanNumber();
+	Token ScanChar();
     Token ErrorToken();
 
     Token ScanString();
