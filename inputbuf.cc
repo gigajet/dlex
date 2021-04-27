@@ -1,8 +1,4 @@
-#include <iostream>
-#include <istream>
-#include <vector>
-#include <string>
-#include <cstdio>
+
 
 #include "inputbuf.h"
 

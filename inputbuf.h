@@ -4,6 +4,9 @@
 #include <string>
 #include <istream>
 #include <sstream>
+#include <iostream>
+#include <vector>
+#include <cstdio>
 class InputBuffer {
   public:
     void GetChar(char&);

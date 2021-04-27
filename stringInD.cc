@@ -281,18 +281,25 @@ Token LexicalAnalyzer::TokenString()
         val.push_back(c);
         if (c == '{')
         {
-            bool isEndLoop = false;
-            while (!input.EndOfInput() && !isEndLoop)
+            //bool isEndLoop = false;
+            int cnt = 1;
+            while (!input.EndOfInput())
             {
                 input.GetChar(c);
                 val.push_back(c);
-                if (c=='}')
-                {
-                    isEndLoop = true;
+                if (c=='{') ++cnt;
+                if (c=='}') --cnt;
+                if (cnt == 0)
                     break;
-                }
+                if (cnt < 0) 
+                    return ErrorToken();
+                // if (c=='}' && )
+                // {
+                //     isEndLoop = true;
+                //     break;
+                // }
             }
-            if (!isEndLoop)
+            if (cnt != 0)
             {
                 tmp.line_no = line_no;
                 tmp.token_type = ERROR;

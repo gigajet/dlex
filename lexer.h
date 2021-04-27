@@ -1,14 +1,20 @@
 #ifndef __LEXER__H__
 #define __LEXER__H__
+#define DEBUGG
 
 #include <vector>
 #include <string>
-
 #include "inputbuf.h"
 #include "Util.h"
+#include <iostream>
+#include <istream>
+#include <vector>
+#include <string>
+#include <cctype>
+#include <fstream>
 
 // ------- token types -------------------
-
+using namespace std;
 typedef enum { END_OF_FILE = 0,
     //Keyword for DLANG
     ABSTRACT, ALIAS, ALIGN, ASM, ASSERT, AUTO, BODY,
@@ -28,22 +34,20 @@ typedef enum { END_OF_FILE = 0,
     __MODULE__, ___LINE__, ___FUNCTION__, ___PRETTY_FUNCTION__,
     __GSHARED, __TRAITS, __VECTOR, __PARAMETERS,
     LCURLY, RCURLY,
-    //Others
-    //PLUS, MINUS, DIV, MULT,
     PLUS, MINUS, DIV, MULT, REMAIN, POWER,
-	INC, DEC, 
+	  INC, DEC, 
     EQUAL, COLON, COMMA, SEMICOLON,
     LBRAC, RBRAC, LPAREN, RPAREN,
-	ASSIGN, PLUSASSIGN, MINUSASSIGN, DIVASSIGN, REMAINASSIGN, MULTASSIGN, POWERASSIGN,
+	  ASSIGN, PLUSASSIGN, MINUSASSIGN, DIVASSIGN, REMAINASSIGN, MULTASSIGN, POWERASSIGN,
     NOTEQUAL, GREATER, LESS, LTEQ, GTEQ,
-	NOT, LOR, LAND,
-	BOR, BAND, XOR, ONECOMPLETE, LEFTSHIFT, RIGHTSHIFT, LOGRIGHTSHIFT,
-	ORASSIGN, ANDASSIGN, XORASSIGN, ONECOMPLETE_ASSIGN, LEFTSHIFT_ASSIGN, RIGHTSHIFT_ASSIGN,
-	LOG_RIGHTSHIFT_ASSIGN,
-	LAMBDA,
-	CONDITIONAL, QMARK,
+	  NOT, LOR, LAND,
+	  BOR, BAND, XOR, ONECOMPLETE, LEFTSHIFT, RIGHTSHIFT, LOGRIGHTSHIFT,
+	  ORASSIGN, ANDASSIGN, XORASSIGN, ONECOMPLETE_ASSIGN, LEFTSHIFT_ASSIGN, RIGHTSHIFT_ASSIGN,
+	  LOG_RIGHTSHIFT_ASSIGN,
+	  LAMBDA,
+	  CONDITIONAL, QMARK,
     DOT, NUM, ID, ERROR, // TODO: Add labels for new token types here
-        CHARACTER,
+    CHARACTER, 
     DECINT, BININT, HEXINT, OCTINT,
     WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR
 } TokenType;
@@ -71,11 +75,6 @@ class LexicalAnalyzer {
       tmp.line_no = 1;
       tmp.token_type = ERROR;
     }
-    // ~LexicalAnalyzer()
-    // {
-    //   delete input.stream;
-    //   input.stream = nullptr;
-    // }
 
   private:
     std::vector<Token> tokens;
@@ -86,12 +85,12 @@ class LexicalAnalyzer {
     bool SkipSpace();
     bool isSpecialCharacter();
     bool IsKeyword(std::string);
-	bool IsEscSequence(char);
-	bool IsValidEntity(std::string);
+	  bool IsEscSequence(char);
+  	bool IsValidEntity(std::string);
     TokenType FindKeywordIndex(std::string);
     Token ScanIdOrKeyword();
     Token ScanNumber();
-	Token ScanChar();
+	  Token ScanChar();
     Token ErrorToken();
 
     Token ScanString();
@@ -100,5 +99,10 @@ class LexicalAnalyzer {
     Token DelimitedString();
     Token TokenString();
 };
+
+bool isHexa(int c);
+vector<string> getEntity(string filename);
+
+void debugg(string messages);
 
 #endif  //__LEXER__H__

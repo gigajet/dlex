@@ -1,13 +1,4 @@
-#include <iostream>
-#include <istream>
-#include <vector>
-#include <string>
-#include <cctype>
-#include <fstream>
-
 #include "lexer.h"
-#include "inputbuf.h"
-#include "Util.h"
 
 using namespace std;
 
@@ -28,8 +19,6 @@ string reserved[] = { "END_OF_FILE",
     "__FILE_FULL_PATH__", "__MODULE__", "__LINE__", "__FUNCTION__",
     "__PRETTY_FUNCTION__", "__GSHARED", "__TRAITS", "__VECTOR", "__PARAMETERS",
 	"LCURLY", "RCURLY",
-    //others
-    //"PLUS", "MINUS", "DIV", "MULT",
     "PLUS", "MINUS", "DIV", "MULT", "REMAIN", "POWER",
 	"INC", "DEC",
     "EQUAL", "COLON", "COMMA", "SEMICOLON",
@@ -63,10 +52,18 @@ string keyword[] = {
     "throw", "true", "try", "typeid", "typeof", "ubyte", "ucent", "uint", "ulong", "union",
     "unittest", "ushort", "version", "void", "wchar", "while", "with", "__FILE__",
     "__FILE_FULL_PATH__", "__MODULE__", "__LINE__", "__FUNCTION__",
-    "__PRETTY_FUNCTION__", "__gshared", "__traits", "__vector", "__parameters", };
+    "__PRETTY_FUNCTION__", "__gshared", "__traits", "__vector", "__parameters", 
+	};
 
 #define ESC_SEQUENCE_COUNT 12
 char esc_sequence[] = { '\'', '\"', '\?', '\\', '0' ,'a', 'b', 'f', 'n', 'r', 't', 'v' };
+
+void debugg(string messages)
+{
+  #ifdef DEBUGG
+    cout<<messages<<endl;
+  #endif
+}
 
 vector<string> namecharEntity;
 vector<string> getEntity(string filename) {
@@ -148,8 +145,14 @@ bool LexicalAnalyzer::IsEscSequence(char a) {
 }
 
 bool LexicalAnalyzer::IsValidEntity(string s) {
+	debugg(s);
+	debugg(namecharEntity[0]);
+	debugg(to_string(s.length()));
+	debugg(to_string(namecharEntity[0].length()));
 	for (int i = 0; i < namecharEntity.size(); i++) {
-		if (s == namecharEntity[i]) return true;
+		#ifdef __APPLE__
+			if (s == namecharEntity[i].substr(1, namecharEntity[i].length()-1)) return true;
+		#endif
 	}
 	return false;
 }
@@ -487,6 +490,7 @@ Token LexicalAnalyzer::ScanChar() {
 				}
 			}
 			else if (c == '&') {
+				//cout << "day la debug mode\n";
 				int i = 0;
 				string t = "";
 				while (!input.EndOfInput() && i <= 8) {
@@ -496,8 +500,12 @@ Token LexicalAnalyzer::ScanChar() {
 					if (c == ';') break;
 					t += c;
 				}
+				debugg(t);
+				debugg(tempo);
+				debugg(to_string(c));
 				if (c == ';') {
 					if (IsValidEntity(t)) {
+						debugg("t is valid");
 						input.GetChar(c);
 						tempo += c;
 						if (c == '\'') {
@@ -551,7 +559,6 @@ Token LexicalAnalyzer::ScanIdOrKeyword()
             tmp.lexeme += c;
             input.GetChar(c);
         }
-		cout<<"LEXEME: "<<tmp.lexeme<<"\n";
         if (!input.EndOfInput()) {
             input.UngetChar(c);
         }
@@ -866,7 +873,8 @@ Token LexicalAnalyzer::GetToken()
 
 int main()
 {
-	namecharEntity = getEntity("C:\\Users\\Admin\\Downloads\\Principal of Programming Language\\Dlang\\dlex-main\\dlex-main\\CharEntity.txt");
+	namecharEntity = getEntity("./CharEntity.txt");
+	
     LexicalAnalyzer lexer;
     //lexer.input.stream = &std::cin;
     Token token;
