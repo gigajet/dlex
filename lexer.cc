@@ -31,10 +31,11 @@ string reserved[] = { "END_OF_FILE",
 	"LOG_RIGHTSHIFT_ASSIGN",
 	"LAMBDA",
 	"CONDITIONAL", "QMARK",
-    "DOT", "NUM", "ID", "ERROR",
+    "DOT", "SLICE", "DOTDOTDOT", "NUM", "ID", "ERROR",
 	"CHARACTER",
     "DECINT", "BININT", "HEXINT", "OCTINT",
     "WYSIWYGSTR", "DOUBLESTR", "DELIMITEDSTR", "TOKENSTR",
+	"FLOAT", "DOUBLE", "REAL", "COMPLEXFLOAT", "COMPLEXDOUBLE", "COMPLEXREAL"
 };
 
 #define KEYWORDS_COUNT 110
@@ -617,6 +618,21 @@ Token LexicalAnalyzer::GetToken()
 			return tmp;
 		case '.':
 			tmp.token_type = DOT;
+			input.GetChar(c);
+			if (c == '.')
+			{
+				tmp.token_type = SLICE;
+				input.GetChar(c);
+				if (c=='.')
+					tmp.token_type = DOTDOTDOT;
+				return tmp;
+			}
+			else if (isdigit(c))
+			{
+				input.UngetChar(c);
+				input.UngetChar('.');
+				return inreal();
+			}
 			return tmp;
 		case '+':
 			input.GetChar(c);
