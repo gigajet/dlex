@@ -73,28 +73,28 @@ Token LexicalAnalyzer::inreal()
             {
                 val.pop_back();
                 input.UngetChar(c);
-                bool validExp = false;
-                while (1)
+            }
+            bool validExp = false;
+            while (1)
+            {
+                input.GetChar(c);
+                if (isdigit(c))
                 {
-                    input.GetChar(c);
-                    if (isdigit(c))
-                    {
-                        validExp = true;
-                        val.push_back(c);
-                        continue;
-                    }
-                    else if (c=='_')
-                    {
-                        val.push_back(c);
-                        continue;
-                    }
-                    input.UngetChar(c);
-                    if (!validExp)
-                    {
-                        return ErrorToken();
-                    }
-                    break;
+                    validExp = true;
+                    val.push_back(c);
+                    continue;
                 }
+                else if (c=='_')
+                {
+                    val.push_back(c);
+                    continue;
+                }
+                input.UngetChar(c);
+                if (!validExp)
+                {
+                    return ErrorToken();
+                }
+                break;
             }
         }
         else if (ishex)
@@ -112,7 +112,7 @@ Token LexicalAnalyzer::inreal()
         input.GetChar(c);
         if (toupper(c) == 'F')
         {
-            tmp.token_type = FLOAT;
+            tmp.token_type = FLOATNUM;
             val.push_back(c);
         }
         else if (c == 'L')
@@ -123,18 +123,18 @@ Token LexicalAnalyzer::inreal()
         else 
         {
             input.UngetChar(c);
-            tmp.token_type = DOUBLE;
+            tmp.token_type = DOUBLENUM;
         }
 
         input.GetChar(c);
         if (c == 'i')
         {
             val.push_back(c);
-            if (tmp.token_type == FLOAT)
+            if (tmp.token_type == FLOATNUM)
                 tmp.token_type = COMPLEXFLOAT;
             else if (tmp.token_type == REALNUM)
                 tmp.token_type = COMPLEXREAL;
-            else if (tmp.token_type == DOUBLE)
+            else if (tmp.token_type == DOUBLENUM)
                 tmp.token_type = COMPLEXDOUBLE;
         }
         else 

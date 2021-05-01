@@ -514,8 +514,7 @@ Token LexicalAnalyzer::ScanNumber() {
 			case '_':
 				continue;
 			default:
-				c1=c;
-				goto Ldone;
+				goto Ldone1;
 		}
 		if (digit >= base) {
 			error = true;
@@ -525,7 +524,9 @@ Token LexicalAnalyzer::ScanNumber() {
 	}
 	goto Ldone2;
 	Ldone:
-		input.UngetChar(c1); lexeme.pop_back(); //This step is necessary
+		input.UngetChar(c1); lexeme.pop_back(); //These steps are necessary
+	Ldone1:
+		input.UngetChar(c); lexeme.pop_back();
 	Ldone2:
 		if ((base==2&&!anyBinDigit) || (base==16&&!anyHexDigit)) {
 			error=true;
