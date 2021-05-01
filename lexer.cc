@@ -35,7 +35,7 @@ string reserved[] = { "END_OF_FILE",
 	"CHARACTER",
     "DECINT", "BININT", "HEXINT", "OCTINT",
     "WYSIWYGSTR", "DOUBLESTR", "DELIMITEDSTR", "TOKENSTR",
-	"FLOAT", "DOUBLE", "REAL", "COMPLEXFLOAT", "COMPLEXDOUBLE", "COMPLEXREAL"
+	"FLOATNUM", "DOUBLENUM", "REALNUM", "COMPLEXFLOAT", "COMPLEXDOUBLE", "COMPLEXREAL"
 };
 
 #define KEYWORDS_COUNT 110
@@ -168,185 +168,414 @@ TokenType LexicalAnalyzer::FindKeywordIndex(string s)
     return ERROR;
 }
 
-Token LexicalAnalyzer::ScanNumber()
-{
-    char c;
+/*
+	Vì không xử lý hết 1 đống issue [trên discord] nên dẹp code lại luôn.
+*/
+// Token LexicalAnalyzer::ScanNumber_oldvkl()
+// {
+//     char c;
+//     input.GetChar(c);
+//     tmp.line_no = line_no;
+// 	//isDelimeterOfToken chứa dấu chấm
+// 	//chỉ đọc tối đa 1 dấu chấm
+// 	int dot_count=0;
+//     while (!input.EndOfInput() && ((dot_count==0 && c=='.') || (!isspace(c) && !isDelimiterOfToken(c)))) {
+//         tmp.lexeme += c;
+// 		dot_count += (c=='.');
+//         input.GetChar(c);
+//     }
+//     if (!input.EndOfInput()) {
+//         input.UngetChar(c);
+//     }
+//     if (tmp.lexeme.length()==1 && isdigit(tmp.lexeme[0])) {
+//         tmp.token_type = DECINT;
+//         return tmp;
+//     }
+//     else if (tmp.lexeme[0]=='0') {
+//         int number_prefix=1;
+//         if (toupper(tmp.lexeme[1])=='X') {
+// 			//Base 16 HEX
+//             ++number_prefix;
+//             int digit_encountered=0;
+// 			int dot_encountered=0;
+//             for (char c: tmp.lexeme.substr(2)) {
+// 				dot_encountered += (c=='.');
+//                 if (isxdigit(c)) {
+//                     digit_encountered=1;
+//                     ++number_prefix;
+//                 }
+//                 else if (c=='_') {
+//                     ++number_prefix;
+//                 }
+//                 else break;
+//             }
+// 			/*
+// 				Suffix Li | [Ff][i | eps] là vô nghĩa với hex vì:
+// 				Dlang không cho suffix i/Li (vd 0x33i hay 0x33Li là không được)
+// 				suffix f và F được hiểu là chữ số hexa nên không bao giờ được có suffix F/f
+// 			*/
+//             int valid_integer_suffix=(number_prefix >= tmp.lexeme.length() ? 1 : 0)
+//                 | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+//                 | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+//                 | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+// 				| (tmp.lexeme.substr(number_prefix,1)=="p")<<4 //Hex exponent
+// 				| (tmp.lexeme.substr(number_prefix,1)=="P")<<5
+//                 | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<7
+//                 | (tmp.lexeme.substr(number_prefix,2)=="LU")<<8
+//                 | (tmp.lexeme.substr(number_prefix,2)=="uL")<<9
+//                 | (tmp.lexeme.substr(number_prefix,2)=="UL")<<10;
+//             if (!digit_encountered || !valid_integer_suffix || dot_encountered) {
+//                 tmp.token_type = ERROR;
+//                 if (valid_integer_suffix >> 1) ++number_prefix;
+//                 if (valid_integer_suffix >> 7) ++number_prefix;
+//                 if (number_prefix < tmp.lexeme.length())
+//                     input.UngetString(tmp.lexeme.substr(number_prefix));
+//                 tmp.lexeme = "";
+//                 /*
+//                 //Không có digit --> 0x____________[xxx]
+//                                     0x____________uL (nuốt luôn chữ uL)
+//                                     0x____________uLA (nhả chữ A)
+//                                     0x12312_[(Có chữ)] và chữ đó khác */
+//             }
+//             else {
+// 				//Nếu bit 4,5 bật (Exponent P) thì bay vào inreal
+// 				if (valid_integer_suffix & 0x30) {
+// 					input.UngetString(tmp.lexeme);
+// 					tmp.lexeme="";
+// 					return inreal();
+// 				}
+//                 tmp.token_type = HEXINT;
+//                 if (valid_integer_suffix >> 1) ++number_prefix;
+//                 if (valid_integer_suffix >> 7) ++number_prefix;
+//                 //Nhả sau cái integer suffix về...
+//                 if (number_prefix < tmp.lexeme.length()) {
+//                     input.UngetString(tmp.lexeme.substr(number_prefix));
+// 					tmp.lexeme = tmp.lexeme.substr(0,number_prefix);
+// 				}
+//             }
+//             return tmp;
+//         }
+//         else if (toupper(tmp.lexeme[1])=='B') {
+// 			//Base 2, Binary
+//             ++number_prefix;
+//             int digit_encountered=0;
+//             for (char c: tmp.lexeme.substr(2)) {
+//                 if (c=='0' || c=='1') {
+//                     digit_encountered=1;
+//                     ++number_prefix;
+//                 }
+//                 else if (c=='_') {
+//                     ++number_prefix;
+//                 }
+//                 else break;
+//             }
+// 			//There is no binary float --> No floating point suffix supported for 0b...(Li | [fF][i|eps])
+//             int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
+//                 | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+//                 | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+//                 | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+//                 | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
+//                 | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
+//                 | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
+//                 | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
+//             if (!digit_encountered || !valid_integer_suffix) {
+//                 tmp.token_type = ERROR;
+//                 if (valid_integer_suffix >> 1) ++number_prefix;
+//                 if (valid_integer_suffix >> 4) ++number_prefix;
+//                 if (number_prefix < tmp.lexeme.length())
+//                     input.UngetString(tmp.lexeme.substr(number_prefix));
+//                 tmp.lexeme = "";
+//             }
+//             else {
+//                 tmp.token_type = BININT;
+//                 if (valid_integer_suffix >> 1) ++number_prefix;
+//                 if (valid_integer_suffix >> 4) ++number_prefix;
+//                 if (number_prefix < tmp.lexeme.length()) {
+//                     input.UngetString(tmp.lexeme.substr(number_prefix));
+// 					tmp.lexeme = tmp.lexeme.substr(0,number_prefix);
+// 				}
+//             }
+//             return tmp;
+//         }
+//         else {
+//             int value=0;
+//             for (char ch : tmp.lexeme)
+//                 if (isdigit(ch)) {
+//                     value=value*10+(ch-'0');
+//                     ++number_prefix;
+//                 }
+//                 else if (ch=='_') {
+//                     ++number_prefix;
+//                 }
+//                 else break;
+//             //else return OctalInteger();
+//             //According to old grammar, 030 is octal literal.
+//             //But octal literals like 010 are no longer supported in latest version
+//             //The dmd compiler raises error for octal literal larger than 7.
+//             //Therefore, we raise an error for, example, 000000009 or 0010
+//             int valid_integer_suffix=(number_prefix >= tmp.lexeme.length() ? 1 : 0)
+//                 | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+//                 | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+//                 | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+//                 | (tmp.lexeme.substr(number_prefix,1)=="f")<<4
+//                 | (tmp.lexeme.substr(number_prefix,1)=="F")<<5
+//                 | (tmp.lexeme.substr(number_prefix,1)=="i")<<6
+//                 | (tmp.lexeme.substr(number_prefix,1)=="e")<<7
+//                 | (tmp.lexeme.substr(number_prefix,1)=="E")<<8
+//                 | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<9
+//                 | (tmp.lexeme.substr(number_prefix,2)=="LU")<<10
+//                 | (tmp.lexeme.substr(number_prefix,2)=="uL")<<11
+//                 | (tmp.lexeme.substr(number_prefix,2)=="UL")<<12
+//                 | (tmp.lexeme.substr(number_prefix,2)=="Fi")<<13
+//                 | (tmp.lexeme.substr(number_prefix,2)=="fi")<<14
+//                 | (tmp.lexeme.substr(number_prefix,2)=="Li")<<15;
+//             if (value>7 || !valid_integer_suffix) {
+//                 tmp.token_type=ERROR;
+//                 if (valid_integer_suffix >> 1) ++number_prefix;
+//                 if (valid_integer_suffix >> 9) ++number_prefix;
+//                 if (number_prefix < tmp.lexeme.length())
+//                     input.UngetString(tmp.lexeme.substr(number_prefix));
+//                 tmp.lexeme="";
+//                 return tmp;
+//             }
+// 			//Nếu các bit 4,5,6,7,8,9,13,14,15 bật thì nhả string rồi bay qua inreal
+// 			//C++14 trở lên mới hỗ trợ 0b
+// 			//Đổi: 0b1110_0011_1111_0000 = 0xE3F0
+// 			//TODO xem lại OCT với floating suffix
+// 			if (valid_integer_suffix & 0xE3F0) {
+// 				input.UngetString(tmp.lexeme);
+// 				tmp.lexeme="";
+// 				return inreal();
+// 			}
+//             tmp.token_type=OCTINT;
+//             if (valid_integer_suffix >> 1) ++number_prefix;
+//             if (valid_integer_suffix >> 9) ++number_prefix;
+// 			if (number_prefix < tmp.lexeme.length()) {
+// 				input.UngetString(tmp.lexeme.substr(number_prefix));
+// 				tmp.lexeme = tmp.lexeme.substr(0,number_prefix);
+// 			}
+//             return tmp;
+//         }
+//     }
+//     else { //Not start with '0' --> DECINT.
+//         int number_prefix=0;
+//         int digit_encountered=0;
+//         for (char c: tmp.lexeme) {
+//             if (isdigit(c)) {
+//                 digit_encountered=1;
+//                 ++number_prefix;
+//             }
+//             else if (c=='_') {
+//                 ++number_prefix;
+//             }
+//             else break;
+//         }
+// 		int valid_integer_suffix=(number_prefix >= tmp.lexeme.length() ? 1 : 0)
+// 			| (tmp.lexeme.substr(number_prefix,1)=="L")<<1
+// 			| (tmp.lexeme.substr(number_prefix,1)=="u")<<2
+// 			| (tmp.lexeme.substr(number_prefix,1)=="U")<<3
+// 			| (tmp.lexeme.substr(number_prefix,1)=="f")<<4
+// 			| (tmp.lexeme.substr(number_prefix,1)=="F")<<5
+// 			| (tmp.lexeme.substr(number_prefix,1)=="i")<<6
+// 			| (tmp.lexeme.substr(number_prefix,1)=="e")<<7
+// 			| (tmp.lexeme.substr(number_prefix,1)=="E")<<8
+// 			| (tmp.lexeme.substr(number_prefix,2)=="Lu")<<9
+// 			| (tmp.lexeme.substr(number_prefix,2)=="LU")<<10
+// 			| (tmp.lexeme.substr(number_prefix,2)=="uL")<<11
+// 			| (tmp.lexeme.substr(number_prefix,2)=="UL")<<12
+// 			| (tmp.lexeme.substr(number_prefix,2)=="Fi")<<13
+// 			| (tmp.lexeme.substr(number_prefix,2)=="fi")<<14
+// 			| (tmp.lexeme.substr(number_prefix,2)=="Li")<<15;
+//         if (!digit_encountered || !valid_integer_suffix) {
+//             tmp.lexeme = "";
+//             tmp.token_type = ERROR;
+// 			if (valid_integer_suffix >> 1) ++number_prefix;
+// 			if (valid_integer_suffix >> 9) ++number_prefix;
+//             if (number_prefix < tmp.lexeme.length())
+//                 input.UngetString(tmp.lexeme.substr(number_prefix));
+//         }
+//         else {
+// 			//Nếu các bit 4,5,6,7,8,9,13,14,15 bật thì nhả string rồi bay qua inreal
+// 			//C++14 trở lên mới hỗ trợ 0b
+// 			//Đổi: 0b1110_0011_1111_0000 = 0xE3F0
+// 			//TODO xem lại OCT với floating suffix
+// 			if (valid_integer_suffix & 0xE3F0) {
+// 				input.UngetString(tmp.lexeme);
+// 				tmp.lexeme="";
+// 				return inreal();
+// 			}
+//             tmp.token_type = DECINT;
+// 			if (valid_integer_suffix >> 1) ++number_prefix;
+// 			if (valid_integer_suffix >> 9) ++number_prefix;
+// 			if (number_prefix < tmp.lexeme.length()) {
+// 				input.UngetString(tmp.lexeme.substr(number_prefix));
+// 				tmp.lexeme = tmp.lexeme.substr(0,number_prefix);
+// 			}
+//         }
+//         return tmp;
+//     }
+// }
+
+
+Token LexicalAnalyzer::ScanNumber() {
+    char c,c1;
     input.GetChar(c);
+	string lexeme; lexeme += c;
     tmp.line_no = line_no;
-    while (!input.EndOfInput() && !isspace(c) && !isDelimiterOfToken(c)) {
-        tmp.lexeme += c;
-        input.GetChar(c);
-    }
-    if (!input.EndOfInput()) {
-        input.UngetChar(c);
-    }
-    if (tmp.lexeme.length()<=1 && isdigit(tmp.lexeme[0])) {
-        tmp.token_type = DECINT;
-        return tmp;
-    }
-    else if (tmp.lexeme[0]=='0') {
-        int number_prefix=1;
-        if (toupper(tmp.lexeme[1])=='X') {
-            ++number_prefix;
-            int digit_encountered=0;
-            for (char c: tmp.lexeme.substr(2)) {
-                if (isxdigit(c)) {
-                    digit_encountered=1;
-                    ++number_prefix;
-                }
-                else if (c=='_') {
-                    ++number_prefix;
-                }
-                else break;
+	int base=10;
+	bool error=false;
+	int digit=0;
+	bool anyDigit=false, anyHexDigit=false, anyBinDigit=false;
+	long long n=0;
+	if (c=='0') {
+		input.GetChar(c); lexeme+=c;
+		switch (c) {
+			case '0': case '1': case '2': case '3': case '4': 
+			case '5': case '6': case '7': case '8': case '9':
+				base=8;
+				break;
+			case 'x': case 'X':
+				base=16;
+				break;
+			case 'b': case 'B':
+				base=2;
+				break;
+			case '.':
+				input.GetChar(c1); lexeme+=c1;
+                if (c1 == '.')
+                    goto Ldone; // if ".."
+                if (isalpha(c1) || c1 == '_' || c1 & 0x80)
+                    goto Ldone; // if ".identifier" or ".unicode"
+                goto Lreal; // '.' is part of current token
+            case 'i':
+            case 'f':
+            case 'F':
+                goto Lreal;
+            case '_':
+                base = 8;
+                break;
+            case 'L':
+				input.GetChar(c1); lexeme+=c1;
+                if (c1 == 'i')
+                    goto Lreal;
+                break;
+            default:
+                break;
+		}
+	}
+	while (true) {
+		input.GetChar(c); lexeme+=c;
+		switch (c) {
+			case '0': case '1': 
+				digit = c - '0';
+				anyBinDigit=true;
+				anyDigit=true;
+				anyHexDigit=true;
+				break;
+			case '2': case '3': case '4': case '5': 
+			case '6': case '7': case '8': case '9':
+				digit = c - '0';
+				anyDigit=true;
+				anyHexDigit=true;
+				break;
+			case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': 
+			case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+				if (base != 16)
+				{
+					if (c == 'e' || c == 'E' || c == 'f' || c == 'F')
+						goto Lreal;
+				}
+				anyHexDigit=true;
+				if (c >= 'a')
+					digit = c + 10 - 'a';
+				else
+					digit = c + 10 - 'A';
+				break;
+			case 'L':
+				input.GetChar(c1); lexeme+=c1;
+				if (c1 == 'i')
+					goto Lreal;
+				goto Ldone;
+			case '.':
+				input.GetChar(c1); lexeme+=c1;
+				if (c1 == '.')
+					goto Ldone; // ..
+				if (base == 10 && (isalpha(c1) || c1 == '_' || c1 & 0x80))
+					goto Ldone; // .iden .unicode
+				if (base == 16 && (!isxdigit(c1) || c1 == '_' || c1 & 0x80))
+					goto Ldone; // .iden .unicode
+				if (base == 2)
+					goto Ldone; // no . in binary
+				goto Lreal;
+			case 'p': case 'P': case 'i':
+			Lreal:
+				input.UngetString(lexeme);
+				return inreal();
+			case '_':
+				continue;
+			default:
+				c1=c;
+				goto Ldone;
+		}
+		if (digit >= base) {
+			error = true;
+		}
+		//Just check if value >=8 or not
+		n=n*base+digit; if (n>=8) n=8;
+	}
+	goto Ldone2;
+	Ldone:
+		input.UngetChar(c1); lexeme.pop_back(); //This step is necessary
+	Ldone2:
+		if ((base==2&&!anyBinDigit) || (base==16&&!anyHexDigit)) {
+			error=true;
+		}
+		
+		int flag_suffix=0;
+		//bit 0: u, bit 1: L
+        // Parse trailing 'u', 'U', 'l' or 'L' in any combination
+		bool still_reading=true;
+        while (still_reading) {
+            int f; input.GetChar(c); lexeme+=c;
+            switch (c) {
+				case 'U': case 'u':
+					if (flag_suffix & 1) {
+						//Already has the flag
+						error=true; 
+					}
+					flag_suffix |= 1;
+					break;
+				case 'L':
+					if (flag_suffix & 2) {
+						//Already has the flag
+						error=true; 
+					}
+					flag_suffix |= 2;
+					break;
+				default:
+					input.UngetChar(c); lexeme.pop_back();
+					still_reading=false;
+					break;
             }
-            int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
-                | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
-                | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
-                | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
-                | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
-                | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
-                | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
-                | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
-            if (!digit_encountered || !valid_integer_suffix) {
-                tmp.lexeme = "";
-                tmp.token_type = ERROR;
-                if (valid_integer_suffix >> 1) ++number_prefix;
-                if (valid_integer_suffix >> 4) ++number_prefix;
-                if (number_prefix < tmp.lexeme.length())
-                    input.UngetString(tmp.lexeme.substr(number_prefix));
-                /*
-                //Không có digit --> 0x____________[xxx]
-                                    0x____________uL (nuốt luôn chữ uL)
-                                    0x____________uLA (nhả chữ A)
-                                    0x12312_[(Có chữ)] và chữ đó khác */
-            }
-            else {
-                tmp.token_type = HEXINT;
-                if (valid_integer_suffix >> 1) ++number_prefix;
-                if (valid_integer_suffix >> 4) ++number_prefix;
-                //Nhả sau cái integer suffix về...
-                if (number_prefix < tmp.lexeme.length())
-                    input.UngetString(tmp.lexeme.substr(number_prefix));
-            }
-            return tmp;
         }
-        else if (toupper(tmp.lexeme[1])=='B') {
-            ++number_prefix;
-            int digit_encountered=0;
-            for (char c: tmp.lexeme.substr(2)) {
-                if (c=='0' || c=='1') {
-                    digit_encountered=1;
-                    ++number_prefix;
-                }
-                else if (c=='_') {
-                    ++number_prefix;
-                }
-                else break;
-            }
-            int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
-                | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
-                | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
-                | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
-                | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
-                | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
-                | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
-                | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
-            if (!digit_encountered || !valid_integer_suffix) {
-                tmp.lexeme = "";
-                tmp.token_type = ERROR;
-                if (valid_integer_suffix >> 1) ++number_prefix;
-                if (valid_integer_suffix >> 4) ++number_prefix;
-                if (number_prefix < tmp.lexeme.length())
-                    input.UngetString(tmp.lexeme.substr(number_prefix));
-            }
-            else {
-                tmp.token_type = BININT;
-                if (valid_integer_suffix >> 1) ++number_prefix;
-                if (valid_integer_suffix >> 4) ++number_prefix;
-                if (number_prefix < tmp.lexeme.length())
-                    input.UngetString(tmp.lexeme.substr(number_prefix));
-            }
-            return tmp;
-        }
-        else {
-            int value=0;
-            for (char ch : tmp.lexeme)
-                if (isdigit(ch)) {
-                    value=value*10+(ch-'0');
-                    ++number_prefix;
-                }
-                else if (ch=='_') {
-                    ++number_prefix;
-                }
-                else break;
-            //else return OctalInteger();
-            //According to old grammar, 030 is octal literal.
-            //But octal literals like 010 are no longer supported in latest version
-            //The dmd compiler raises error for octal literal larger than 7.
-            //Therefore, we raise an error for, example, 000000009 or 0010
-            int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
-                | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
-                | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
-                | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
-                | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
-                | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
-                | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
-                | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
-            if (value>7 || !valid_integer_suffix) {
-                tmp.lexeme="";
-                tmp.token_type=ERROR;
-                if (valid_integer_suffix >> 1) ++number_prefix;
-                if (valid_integer_suffix >> 4) ++number_prefix;
-                if (number_prefix < tmp.lexeme.length())
-                    input.UngetString(tmp.lexeme.substr(number_prefix));
-                return tmp;
-            }
-            tmp.token_type=OCTINT;
-            if (valid_integer_suffix >> 1) ++number_prefix;
-            if (valid_integer_suffix >> 4) ++number_prefix;
-            if (number_prefix < tmp.lexeme.length())
-                input.UngetString(tmp.lexeme.substr(number_prefix));
-            return tmp;
-        }
-    }
-    else { //Not start with '0' --> DECINT.
-        int number_prefix=0;
-        int digit_encountered=0;
-        for (char c: tmp.lexeme) {
-            if (isdigit(c)) {
-                digit_encountered=1;
-                ++number_prefix;
-            }
-            else if (c=='_') {
-                ++number_prefix;
-            }
-            else break;
-        }
-        int valid_integer_suffix=(number_prefix >= tmp.lexeme.length())
-            | (tmp.lexeme.substr(number_prefix,1)=="L")<<1
-            | (tmp.lexeme.substr(number_prefix,1)=="U")<<3
-            | (tmp.lexeme.substr(number_prefix,1)=="u")<<2
-            | (tmp.lexeme.substr(number_prefix,2)=="Lu")<<4
-            | (tmp.lexeme.substr(number_prefix,2)=="LU")<<5
-            | (tmp.lexeme.substr(number_prefix,2)=="uL")<<6
-            | (tmp.lexeme.substr(number_prefix,2)=="UL")<<7;
-        if (!digit_encountered || !valid_integer_suffix) {
-            tmp.lexeme = "";
-            tmp.token_type = ERROR;
-            if (valid_integer_suffix >> 1) ++number_prefix;
-            if (valid_integer_suffix >> 4) ++number_prefix;
-            if (number_prefix < tmp.lexeme.length())
-                input.UngetString(tmp.lexeme.substr(number_prefix));
-        }
-        else {
-            tmp.token_type = DECINT;
-            if (valid_integer_suffix >> 1) ++number_prefix;
-            if (valid_integer_suffix >> 4) ++number_prefix;
-            if (number_prefix < tmp.lexeme.length())
-                input.UngetString(tmp.lexeme.substr(number_prefix));
-        }
-        return tmp;
-    }
+		if (base==8 && n>=8) error=true;
+	
+	if (error) {
+		tmp.token_type=ERROR;
+	}
+	else {
+		tmp.lexeme = lexeme;
+		switch (base) {
+			case 2: tmp.token_type=BININT; break;
+			case 8: tmp.token_type=OCTINT; break;
+			case 10: tmp.token_type=DECINT; break;
+			case 16: tmp.token_type=HEXINT; break;
+			default:
+				tmp.token_type=ERROR;
+				break;
+		}
+	}
+	return tmp;
 }
 
 Token LexicalAnalyzer::ScanChar() {

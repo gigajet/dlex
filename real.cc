@@ -117,7 +117,7 @@ Token LexicalAnalyzer::inreal()
         }
         else if (c == 'L')
         {
-            tmp.token_type = REAL;
+            tmp.token_type = REALNUM;
             val.push_back(c);
         }
         else 
@@ -132,7 +132,7 @@ Token LexicalAnalyzer::inreal()
             val.push_back(c);
             if (tmp.token_type == FLOAT)
                 tmp.token_type = COMPLEXFLOAT;
-            else if (tmp.token_type == REAL)
+            else if (tmp.token_type == REALNUM)
                 tmp.token_type = COMPLEXREAL;
             else if (tmp.token_type == DOUBLE)
                 tmp.token_type = COMPLEXDOUBLE;
