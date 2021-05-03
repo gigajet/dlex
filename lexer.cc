@@ -911,6 +911,7 @@ Token LexicalAnalyzer::GetToken()
 				input.GetChar(c);
 				if (c=='.')
 					tmp.token_type = DOTDOTDOT;
+				else input.UngetChar(c);
 				return tmp;
 			}
 			else if (isdigit(c))
@@ -919,6 +920,7 @@ Token LexicalAnalyzer::GetToken()
 				input.UngetChar('.');
 				return inreal();
 			}
+			else input.UngetChar(c);
 			return tmp;
 		case '+':
 			input.GetChar(c);
@@ -965,13 +967,7 @@ Token LexicalAnalyzer::GetToken()
 			}
 			else
 			{
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
-				tmp.token_type = DIV;
-			}
-			if (tmp.token_type == ERROR) {
-				input.GetChar(c);
+				input.UngetChar(c);
 				tmp.token_type = DIV;
 			}
 			return tmp;
