@@ -32,10 +32,11 @@ string reserved[] = { "END_OF_FILE",
 	"LAMBDA",
 	"CONDITIONAL", "QMARK",
     "DOT", "SLICE", "DOTDOTDOT", "NUM", "ID", "ERROR",
-	"CHARACTER",
+	"CHARACTER", "UNICHARACTER",
     "DECINT", "BININT", "HEXINT", "OCTINT",
     "WYSIWYGSTR", "DOUBLESTR", "DELIMITEDSTR", "TOKENSTR",
-	"FLOATNUM", "DOUBLENUM", "REALNUM", "COMPLEXFLOAT", "COMPLEXDOUBLE", "COMPLEXREAL"
+	"FLOATNUM", "DOUBLENUM", "REALNUM", "COMPLEXFLOAT", "COMPLEXDOUBLE", "COMPLEXREAL",
+  "INLINECMT", "BLOCKCMT"
 };
 
 #define KEYWORDS_COUNT 110
@@ -85,6 +86,13 @@ vector<string> getEntity(string filename) {
 
 bool isHexa(int c) {
 	if (isdigit(c) || int(c) < 71 & int(c) > 64 || int(c) < 103 & int(c) > 96) {
+		return true;
+	}
+	else return false;
+}
+bool isOctal(int c) {
+	if (isdigit(c) && int(c) < 56) 
+	{
 		return true;
 	}
 	else return false;
@@ -583,24 +591,29 @@ Token LexicalAnalyzer::ScanChar() {
 	char c;
 	string tempo = "";
 	input.GetChar(c);
-	if (c == '\'') {
+	if (c == '\'') 
+	{
 		tmp.lexeme += c;
 		input.GetChar(c);
 		tempo += c;
-		if (c == '\n') {
+		if (c == '\n') 
+		{
 			tmp.lexeme = "";
 			tmp.token_type = ERROR;
 			return tmp;
 		}
-		if (c != '\\') { //Not an escape sequence
+		if (c != '\\') //Not an escape sequence
+		{ 
 			input.GetChar(c);
 			tempo += c;
-			if (c == '\'') {
+			if (c == '\'') 
+			{
 				tmp.lexeme += tempo;
 				tmp.line_no = line_no;
 				tmp.token_type = CHARACTER;
 			}
-			else {
+			else 
+			{
 				if (!input.EndOfInput()) {
 					input.UngetString(tempo);
 				}
@@ -608,16 +621,18 @@ Token LexicalAnalyzer::ScanChar() {
 				tmp.token_type = ERROR;
 			}
 		}
-		else {//Is an escape sequence
+		else //Is an escape sequence
+		{
 			input.GetChar(c);
 			tempo += c;
-			if (IsEscSequence(c)) {
+			if (IsEscSequence(c)) 
+			{
 				input.GetChar(c);
 				tempo += c;
 				if (c == '\'') {
 					tmp.lexeme += tempo;
 					tmp.line_no = line_no;
-					tmp.token_type = CHARACTER;
+					tmp.token_type = UNICHARACTER;
 				}
 				else {
 					if (!input.EndOfInput()) {
@@ -627,11 +642,39 @@ Token LexicalAnalyzer::ScanChar() {
 					tmp.token_type = ERROR;
 				}
 			}
-			else if (c == 'x') {
+			else if (isOctal(c)) 
+			{
 				int i = 0;
 				input.GetChar(c);
 				tempo += c;
-				while(!input.EndOfInput() && i < 4 && isHexa(c)){	
+				while (!input.EndOfInput() && i < 4)
+				{
+					i++;
+					input.GetChar(c);
+					tempo += c;
+					if (c == '\'') break;
+					if (!isOctal(c)) break;
+				}
+				if (c != '\'') {
+					if (!input.EndOfInput()) {
+						input.UngetString(tempo);
+					}
+					tmp.lexeme = "";
+					tmp.token_type = ERROR;
+				}
+				else {
+					tmp.lexeme += tempo;
+					tmp.line_no = line_no;
+					tmp.token_type = UNICHARACTER;
+				}
+			}
+			else if (c == 'x') 
+			{
+				int i = 0;
+				input.GetChar(c);
+				tempo += c;
+				while(!input.EndOfInput() && i < 4 && isHexa(c))
+				{	
 					i++;
 					input.GetChar(c);
 					tempo += c;			
@@ -640,7 +683,7 @@ Token LexicalAnalyzer::ScanChar() {
 					if (c == '\'') {
 						tmp.lexeme += tempo;
 						tmp.line_no = line_no;
-						tmp.token_type = CHARACTER;
+						tmp.token_type = UNICHARACTER;
 					}
 					else {
 						if (!input.EndOfInput()) {
@@ -658,20 +701,24 @@ Token LexicalAnalyzer::ScanChar() {
 					tmp.token_type = ERROR;
 				}
 			}
-			else if (c == 'u') {
+			else if (c == 'u') 
+			{
 				int i = 0;
 				input.GetChar(c);
 				tempo += c;
-				while (!input.EndOfInput() && i < 4 && isHexa(c)) {
+				while (!input.EndOfInput() && i < 4 && isHexa(c)) 
+				{
 					i++;
 					input.GetChar(c);
 					tempo += c;
 				}
-				if (i == 4) {
-					if (c == '\'') {
+				if (i == 4) 
+				{
+					if (c == '\'') 
+					{
 						tmp.lexeme += tempo;
 						tmp.line_no = line_no;
-						tmp.token_type = CHARACTER;
+						tmp.token_type = UNICHARACTER;
 					}
 					else {
 						if (!input.EndOfInput()) {
@@ -689,11 +736,13 @@ Token LexicalAnalyzer::ScanChar() {
 					tmp.token_type = ERROR;
 				}
 			}
-			else if (c == 'U') {
+			else if (c == 'U') 
+			{
 				int i = 0;
 				input.GetChar(c);
 				tempo += c;
-				while (!input.EndOfInput() && i < 8 && isHexa(c)) {
+				while (!input.EndOfInput() && i < 8 && isHexa(c)) 
+				{
 					i++;
 					input.GetChar(c);
 					tempo += c;
@@ -702,7 +751,7 @@ Token LexicalAnalyzer::ScanChar() {
 					if (c == '\'') {
 						tmp.lexeme += tempo;
 						tmp.line_no = line_no;
-						tmp.token_type = CHARACTER;
+						tmp.token_type = UNICHARACTER;
 					}
 					else {
 						if (!input.EndOfInput()) {
@@ -712,7 +761,8 @@ Token LexicalAnalyzer::ScanChar() {
 						tmp.token_type = ERROR;
 					}
 				}
-				else {
+				else 
+				{
 					if (!input.EndOfInput()) {
 						input.UngetString(tempo);
 					}
@@ -720,7 +770,8 @@ Token LexicalAnalyzer::ScanChar() {
 					tmp.token_type = ERROR;
 				}
 			}
-			else if (c == '&') {
+			else if (c == '&') 
+			{
 				//cout << "day la debug mode\n";
 				int i = 0;
 				string t = "";
@@ -735,16 +786,19 @@ Token LexicalAnalyzer::ScanChar() {
 				debugg(tempo);
 				debugg(to_string(c));
 				if (c == ';') {
-					if (IsValidEntity(t)) {
+					if (IsValidEntity(t)) 
+					{
 						debugg("t is valid");
 						input.GetChar(c);
 						tempo += c;
-						if (c == '\'') {
+						if (c == '\'') 
+						{
 							tmp.lexeme += tempo;
 							tmp.line_no = line_no;
-							tmp.token_type = CHARACTER;
+							tmp.token_type = UNICHARACTER;
 						}
-						else {
+						else 
+						{
 							if (!input.EndOfInput()) {
 								input.UngetString(tempo);
 							}
@@ -752,7 +806,8 @@ Token LexicalAnalyzer::ScanChar() {
 							tmp.token_type = ERROR;
 						}
 					}
-					else {
+					else 
+					{
 						if (!input.EndOfInput()) {
 							input.UngetString(tempo);
 						}
@@ -760,7 +815,8 @@ Token LexicalAnalyzer::ScanChar() {
 						tmp.token_type = ERROR;
 					}
 				}
-				else {
+				else 
+				{
 					if (!input.EndOfInput()) {
 						input.UngetString(tempo);
 					}
@@ -768,7 +824,8 @@ Token LexicalAnalyzer::ScanChar() {
 					tmp.token_type = ERROR;
 				}
 			}
-			else {
+			else 
+			{
 				if (!input.EndOfInput()) {
 					input.UngetString(tempo);
 				}
@@ -821,7 +878,6 @@ TokenType LexicalAnalyzer::UngetToken(Token tok)
     tokens.push_back(tok);;
     return tok.token_type;
 }
-
 Token LexicalAnalyzer::GetToken()
 {
     char c;
@@ -868,10 +924,9 @@ Token LexicalAnalyzer::GetToken()
 			input.GetChar(c);
 			if (c == '+') tmp.token_type = INC;
 			else if (c == '=') tmp.token_type = PLUSASSIGN;
-			else {
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
+			else 
+			{
+				if (!input.EndOfInput()) input.UngetChar(c);
 				tmp.token_type = PLUS;
 			}
 			return tmp;
@@ -890,11 +945,33 @@ Token LexicalAnalyzer::GetToken()
 		case '/':
 			input.GetChar(c);
 			if (c == '=') tmp.token_type = DIVASSIGN;
+			else if (c == '/') 
+			{
+				input.UngetChar(c);
+				input.UngetChar('/');
+				tmp = InlineCmt();
+			}
+			else if (c == '*')
+			{
+				input.UngetChar(c);
+				input.UngetChar('/');
+				tmp = BlockCmt();
+			}
+			else if (c == '+') 
+			{
+				input.UngetChar(c);
+				input.UngetChar('/');
+				//call /+Comment function here
+			}
 			else
 			{
 				if (!input.EndOfInput()) {
 					input.UngetChar(c);
 				}
+				tmp.token_type = DIV;
+			}
+			if (tmp.token_type == ERROR) {
+				input.GetChar(c);
 				tmp.token_type = DIV;
 			}
 			return tmp;
@@ -914,9 +991,7 @@ Token LexicalAnalyzer::GetToken()
 			if (c == '=') tmp.token_type = MULTASSIGN;
 			else
 			{
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
+				if (!input.EndOfInput()) { input.UngetChar(c); }
 				tmp.token_type = MULT;
 			}
 			return tmp;
@@ -924,20 +999,18 @@ Token LexicalAnalyzer::GetToken()
 			input.GetChar(c);
 			if (c == '=') tmp.token_type = EQUAL;
 			else if (c == '>') tmp.token_type = LAMBDA;
-			else {
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
+			else
+			{
+				if (!input.EndOfInput()) { input.UngetChar(c); }
 				tmp.token_type = ASSIGN;
 			}
 			return tmp;
 		case '!':
 			input.GetChar(c);
 			if (c == '=') tmp.token_type = NOTEQUAL;
-			else {
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
+			else 
+			{
+				if (!input.EndOfInput()) { input.UngetChar(c); }
 				tmp.token_type = NOT;
 			}
 			return tmp;
@@ -945,10 +1018,9 @@ Token LexicalAnalyzer::GetToken()
 			input.GetChar(c);
 			if (c == '&') tmp.token_type = LAND;
 			else if (c == '=') tmp.token_type = ANDASSIGN;
-			else {
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
+			else 
+			{
+				if (!input.EndOfInput()) { input.UngetChar(c); }
 				tmp.token_type = BAND;
 			}
 			return tmp;
@@ -956,40 +1028,37 @@ Token LexicalAnalyzer::GetToken()
 			input.GetChar(c);
 			if (c == '|') tmp.token_type = LOR;
 			else if (c == '=') tmp.token_type = ORASSIGN;
-			else {
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
+			else 
+			{
+				if (!input.EndOfInput()) { input.UngetChar(c); }
 				tmp.token_type = BOR;
 			}
 			return tmp;
 		case '^':
 			input.GetChar(c);
 			if (c == '=') tmp.token_type = XORASSIGN;
-			else if (c == '^') {
+			else if (c == '^') 
+			{
 				input.GetChar(c);
 				if (c == '=') tmp.token_type = POWERASSIGN;
-				else {
-					if (!input.EndOfInput()) {
-						input.UngetChar(c);
-					}
+				else 
+				{
+					if (!input.EndOfInput()) { input.UngetChar(c); }
 					tmp.token_type = POWER;
 				}
 			}
-			else {
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}
+			else 
+			{
+				if (!input.EndOfInput()) { input.UngetChar(c); }
 				tmp.token_type = XOR;
 			}
 			return tmp;
 		case '~':
 			input.GetChar(c);
 			if (c == '=') tmp.token_type = ONECOMPLETE_ASSIGN;
-			else {
-				if (!input.EndOfInput()) {
-					input.UngetChar(c);
-				}	
+			else 
+			{
+				if (!input.EndOfInput()) { input.UngetChar(c); }
 				tmp.token_type = ONECOMPLETE;
 			}
 			return tmp;
@@ -1016,13 +1085,16 @@ Token LexicalAnalyzer::GetToken()
 			return tmp;
 		case '<':
 			input.GetChar(c);
-			if (c == '=') {
+			if (c == '=') 
+			{
 				tmp.token_type = LTEQ;
 			}
-			else if (c == '>') {
+			else if (c == '>') 
+			{
 				tmp.token_type = NOTEQUAL;
 			}
-			else if (c == '<') {
+			else if (c == '<') 
+			{
 				input.GetChar(c);
 				if (c == '=') tmp.token_type = LEFTSHIFT_ASSIGN;
 				else {
@@ -1032,8 +1104,10 @@ Token LexicalAnalyzer::GetToken()
 					tmp.token_type = LEFTSHIFT;
 				}
 			}
-			else {
-				if (!input.EndOfInput()) {
+			else 
+			{
+				if (!input.EndOfInput()) 
+				{
 					input.UngetChar(c);
 				}
 				tmp.token_type = LESS;
@@ -1041,15 +1115,18 @@ Token LexicalAnalyzer::GetToken()
 			return tmp;
 		case '>':
 			input.GetChar(c);
-			if (c == '=') {
+			if (c == '=')
+			{
 				tmp.token_type = GTEQ;
 			}
 			else if (c == '>') {
 				input.GetChar(c);
-				if (c == '>') {
+				if (c == '>') 
+				{
 					input.GetChar(c);
 					if (c == '=') { tmp.token_type = LOG_RIGHTSHIFT_ASSIGN; }
-					else {
+					else 
+					{
 						if (!input.EndOfInput()) {
 							input.UngetChar(c);
 						}
@@ -1057,14 +1134,16 @@ Token LexicalAnalyzer::GetToken()
 					}
 				}
 				else if (c == '=') tmp.token_type = RIGHTSHIFT_ASSIGN;
-				else {
+				else 
+				{
 					if (!input.EndOfInput()) {
 						input.UngetChar(c);
 					}
 					tmp.token_type = RIGHTSHIFT;
 				}
 			}
-			else {
+			else 
+			{
 				if (!input.EndOfInput()) {
 					input.UngetChar(c);
 				}
@@ -1073,10 +1152,12 @@ Token LexicalAnalyzer::GetToken()
 			return tmp;
 		case '?':
 			input.GetChar(c);
-			if (c == ':') {
+			if (c == ':') 
+			{
 				tmp.token_type = CONDITIONAL;
 			}
-			else {
+			else 
+			{
 				if (!input.EndOfInput()) {
 					input.UngetChar(c);
 				}

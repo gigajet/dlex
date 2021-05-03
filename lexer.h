@@ -35,10 +35,10 @@ typedef enum { END_OF_FILE = 0,
     __GSHARED, __TRAITS, __VECTOR, __PARAMETERS,
     LCURLY, RCURLY,
     PLUS, MINUS, DIV, MULT, REMAIN, POWER,
-	  INC, DEC, 
+	INC, DEC, 
     EQUAL, COLON, COMMA, SEMICOLON,
     LBRAC, RBRAC, LPAREN, RPAREN,
-	  ASSIGN, PLUSASSIGN, MINUSASSIGN, DIVASSIGN, REMAINASSIGN, MULTASSIGN, POWERASSIGN,
+	ASSIGN, PLUSASSIGN, MINUSASSIGN, DIVASSIGN, REMAINASSIGN, MULTASSIGN, POWERASSIGN,
     NOTEQUAL, GREATER, LESS, LTEQ, GTEQ,
 	  NOT, LOR, LAND,
 	  BOR, BAND, XOR, ONECOMPLETE, LEFTSHIFT, RIGHTSHIFT, LOGRIGHTSHIFT,
@@ -47,10 +47,11 @@ typedef enum { END_OF_FILE = 0,
 	  LAMBDA,
 	  CONDITIONAL, QMARK,
     DOT, SLICE, DOTDOTDOT,NUM, ID, ERROR, // TODO: Add labels for new token types here
-    CHARACTER, 
+    CHARACTER, UNICHARACTER,
     DECINT, BININT, HEXINT, OCTINT,
     WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR,
-    FLOATNUM, DOUBLENUM, REALNUM, COMPLEXFLOAT, COMPLEXDOUBLE, COMPLEXREAL
+    FLOATNUM, DOUBLENUM, REALNUM, COMPLEXFLOAT, COMPLEXDOUBLE, COMPLEXREAL,
+              INLINECMT, BLOCKCMT
 } TokenType;
 
 class Token {
@@ -86,13 +87,16 @@ class LexicalAnalyzer {
     bool SkipSpace();
     bool isSpecialCharacter();
     bool IsKeyword(std::string);
-	  bool IsEscSequence(char);
+	bool IsEscSequence(char);
   	bool IsValidEntity(std::string);
     TokenType FindKeywordIndex(std::string);
     Token ScanIdOrKeyword();
     Token ScanNumber();
-	  Token ScanChar();
+	Token ScanChar();
     Token ErrorToken();
+
+	Token InlineCmt();
+	Token BlockCmt();
 
     Token ScanString();
     Token WysString();
@@ -103,6 +107,7 @@ class LexicalAnalyzer {
 };
 
 bool isHexa(int c);
+bool isOctal(int c);
 vector<string> getEntity(string filename);
 
 void debugg(string messages);
