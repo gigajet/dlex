@@ -46,10 +46,11 @@ typedef enum { END_OF_FILE = 0,
 	  LOG_RIGHTSHIFT_ASSIGN,
 	  LAMBDA,
 	  CONDITIONAL, QMARK,
-    DOT, NUM, ID, ERROR, // TODO: Add labels for new token types here
+    DOT, SLICE, DOTDOTDOT,NUM, ID, ERROR, // TODO: Add labels for new token types here
     CHARACTER, 
     DECINT, BININT, HEXINT, OCTINT,
-    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR
+    WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR,
+    FLOATNUM, DOUBLENUM, REALNUM, COMPLEXFLOAT, COMPLEXDOUBLE, COMPLEXREAL
 } TokenType;
 
 class Token {
@@ -98,6 +99,7 @@ class LexicalAnalyzer {
     Token DoubleQuoteString();
     Token DelimitedString();
     Token TokenString();
+    Token inreal();
 };
 
 bool isHexa(int c);

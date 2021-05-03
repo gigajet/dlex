@@ -2,6 +2,7 @@
 #define UTIL_H_
 
 #include <string>
+#include <cctype>
 
 bool isIdentifierChar(char c);
 bool isDelimiterOfToken(char c);
@@ -11,6 +12,7 @@ bool isValidDelimitedString(std::string str);
 bool isOpenBracket(char c);
 bool isCloseBracketOf(char c, char openBracket);
 bool isIdentifier(std::string str);
+bool ishexdigit(char c);
 
 static std::string NOTIDENTIFIER[] = {
     "__FILE__",
