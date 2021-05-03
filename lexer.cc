@@ -36,7 +36,7 @@ string reserved[] = { "END_OF_FILE",
     "DECINT", "BININT", "HEXINT", "OCTINT",
     "WYSIWYGSTR", "DOUBLESTR", "DELIMITEDSTR", "TOKENSTR",
 	"FLOATNUM", "DOUBLENUM", "REALNUM", "COMPLEXFLOAT", "COMPLEXDOUBLE", "COMPLEXREAL",
-  "INLINECMT", "BLOCKCMT"
+  "INLINE CMT", "BLOCKCMT", "NESTED CMT"
 };
 
 #define KEYWORDS_COUNT 110
@@ -961,7 +961,7 @@ Token LexicalAnalyzer::GetToken()
 			{
 				input.UngetChar(c);
 				input.UngetChar('/');
-				//call /+Comment function here
+				tmp = nestedComment();
 			}
 			else
 			{
@@ -1212,5 +1212,9 @@ int main()
     {
         token = lexer.GetToken();
         token.Print();
+		
+		
+		
+		
     }
 }

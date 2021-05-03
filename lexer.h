@@ -15,7 +15,8 @@
 
 // ------- token types -------------------
 using namespace std;
-typedef enum { END_OF_FILE = 0,
+typedef enum {
+    END_OF_FILE = 0,
     //Keyword for DLANG
     ABSTRACT, ALIAS, ALIGN, ASM, ASSERT, AUTO, BODY,
     BOOL, BREAK, BYTE, CASE, CAST, CATCH, CDOUBLE,
@@ -51,7 +52,7 @@ typedef enum { END_OF_FILE = 0,
     DECINT, BININT, HEXINT, OCTINT,
     WYSIWYGSTR, DOUBLESTR, DELIMITEDSTR, TOKENSTR,
     FLOATNUM, DOUBLENUM, REALNUM, COMPLEXFLOAT, COMPLEXDOUBLE, COMPLEXREAL,
-              INLINECMT, BLOCKCMT
+              INLINECMT, BLOCKCMT, NESTEDCMT
 } TokenType;
 
 class Token {
@@ -63,7 +64,7 @@ class Token {
     int line_no;
 };
 
-class LexicalAnalyzer {
+class    {
   public:
     Token GetToken();
     TokenType UngetToken(Token);
