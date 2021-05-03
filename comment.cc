@@ -12,7 +12,10 @@ Token LexicalAnalyzer::InlineCmt()
 		{
 			while (!input.EndOfInput()) 
 			{
-				if (c == '\n') break;
+				if (c == '\n') {
+					++line_no;
+					break;
+				}
 				tmp.lexeme += c;
 				input.GetChar(c);
 			}
@@ -34,6 +37,7 @@ Token LexicalAnalyzer::BlockCmt() {
 			{
 				tmp.lexeme += c;
 				input.GetChar(c);
+				if (c=='\n') ++line_no;
 				if (c == '*') 
 				{
 					tmp.lexeme += c;
@@ -44,6 +48,7 @@ Token LexicalAnalyzer::BlockCmt() {
 						close = true;
 						break;
 					}
+					else if (c=='\n') ++line_no;
 					else continue;
 				}
 				if (c == '\n' && input.EndOfInput())
@@ -55,7 +60,6 @@ Token LexicalAnalyzer::BlockCmt() {
 			if(close) tmp.token_type = BLOCKCMT;
 			else 
 			{
-				input.UngetString(tmp.lexeme);
 				tmp.token_type = ERROR;
 			}
 		}
@@ -78,6 +82,7 @@ Token LexicalAnalyzer::nestedComment() {
 			{
 				tmp.lexeme += c;
 				input.GetChar(c);
+				if (c=='\n') ++line_no;
 				if (c == '/')
 				{
 					tmp.lexeme += c;
@@ -85,7 +90,7 @@ Token LexicalAnalyzer::nestedComment() {
 					if (c == '+')
 					{
 						num_begin_nestedCmt++;
-						tmp.lexeme += c;
+						//tmp.lexeme += c;
 					}
 					else continue;
 				}
@@ -96,12 +101,12 @@ Token LexicalAnalyzer::nestedComment() {
 					if (c == '/')
 					{
 						num_begin_nestedCmt--;
-						if(num_begin_nestedCmt > 0)
-							tmp.lexeme += c;
-						else if(num_begin_nestedCmt ==0)
+						if(num_begin_nestedCmt > 0) ;
+						else if(num_begin_nestedCmt ==0) {
 							close = true;
+							tmp.lexeme += c;
 							break;
-						
+						}
 					}
 					else continue;
 				}
@@ -114,7 +119,6 @@ Token LexicalAnalyzer::nestedComment() {
 			if (close) tmp.token_type = NESTEDCMT;
 			else
 			{
-				input.UngetString(tmp.lexeme);
 				tmp.token_type = ERROR;
 			}
 		}

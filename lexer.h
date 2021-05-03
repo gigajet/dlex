@@ -64,7 +64,7 @@ class Token {
     int line_no;
 };
 
-class    {
+class LexicalAnalyzer {
   public:
     Token GetToken();
     TokenType UngetToken(Token);
@@ -98,6 +98,7 @@ class    {
 
 	Token InlineCmt();
 	Token BlockCmt();
+  Token nestedComment();
 
     Token ScanString();
     Token WysString();

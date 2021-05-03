@@ -23,10 +23,10 @@ void InputBuffer::GetChar(char& c)
         c = input_buffer.back();
         input_buffer.pop_back();
     } else {
+        stream->get(c);
         if (stream->eof()) {
             c=EOF;
         }
-        stream->get(c);
     }
 }
 
