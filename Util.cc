@@ -124,3 +124,8 @@ bool isValidDelimitedString(std::string str)
             return false;
     }
 }
+
+bool ishexdigit(char c)
+{
+    return isdigit(c) || (toupper(c) >= 'A' && toupper(c) <= 'F');
+}
