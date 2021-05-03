@@ -843,7 +843,7 @@ Token LexicalAnalyzer::ScanIdOrKeyword()
     input.GetChar(c);
     if (isalpha(c) || c == '_') {
         tmp.lexeme = "";
-        while (!input.EndOfInput() && isalnum(c)) InlineCmt
+        while (!input.EndOfInput() && isalnum(c)) {
             tmp.lexeme += c;
             input.GetChar(c);
         }
